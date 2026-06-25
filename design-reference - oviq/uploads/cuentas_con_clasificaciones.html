@@ -1,0 +1,273 @@
+
+<style>
+  .page{padding:1rem 0}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .top-title{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+  .btn{font-size:13px;padding:7px 14px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+  .btn:hover{background:var(--color-background-secondary)}
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+  .stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+  .stat-label{font-size:12px;color:var(--color-text-secondary)}
+  .stat-val{font-size:22px;font-weight:500;color:var(--color-text-primary);margin-top:2px}
+  .acct-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:10px;overflow:hidden}
+  .acct-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
+  .acct-header:hover{background:var(--color-background-secondary)}
+  .acct-left{display:flex;align-items:center;gap:10px}
+  .acct-icon{width:32px;height:32px;border-radius:var(--border-radius-md);background:#EEEDFE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .acct-name{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+  .acct-meta{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+  .acct-right{display:flex;align-items:center;gap:10px}
+  .badge{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:500}
+  .badge-warn{background:#FAEEDA;color:#633806}
+  .badge-ok{background:#EAF3DE;color:#27500A}
+  .badge-gray{background:#F1EFE8;color:#444441}
+  .chevron{width:16px;height:16px;color:var(--color-text-tertiary);transition:transform .2s;flex-shrink:0}
+  .chevron.open{transform:rotate(90deg)}
+  .acct-body{border-top:0.5px solid var(--color-border-tertiary)}
+
+  .sub-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 10px 52px;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer}
+  .sub-row:last-child{border-bottom:none}
+  .sub-row:hover{background:var(--color-background-secondary)}
+  .sub-left{display:flex;align-items:center;gap:8px}
+  .sub-dot{width:6px;height:6px;border-radius:50%;background:#7F77DD;flex-shrink:0}
+  .sub-name{font-size:13px;color:var(--color-text-primary)}
+  .sub-count{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
+
+  .clasificacion-group{border-bottom:0.5px solid var(--color-border-tertiary)}
+  .clasificacion-group:last-child{border-bottom:none}
+  .clasificacion-header{display:flex;align-items:center;gap:8px;padding:8px 16px 8px 52px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer;user-select:none}
+  .clasificacion-header:hover{background:var(--color-background-tertiary)}
+  .clasificacion-tag{font-size:11px;font-weight:500;color:#444441;background:#F1EFE8;border:0.5px solid #D3D1C7;border-radius:99px;padding:2px 8px;letter-spacing:.02em}
+  .clasificacion-meta{font-size:12px;color:var(--color-text-tertiary)}
+  .chev-sm{width:13px;height:13px;color:var(--color-text-tertiary);transition:transform .2s;margin-left:auto}
+  .chev-sm.open{transform:rotate(90deg)}
+  .clasificacion-subs{}
+  .sub-row-indented{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 10px 68px;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer}
+  .sub-row-indented:last-child{border-bottom:none}
+  .sub-row-indented:hover{background:var(--color-background-secondary)}
+</style>
+
+<h2 class="sr-only">Pantalla de cuentas con Pedregal sin clasificación y Café Britt con clasificaciones agrupadas</h2>
+
+<div class="page">
+
+  <div class="top-bar">
+    <span class="top-title">Cuentas</span>
+    <button class="btn">+ Nueva cuenta</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Cuentas</div>
+      <div class="stat-val">2</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Subcuentas</div>
+      <div class="stat-val">9</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Clasificaciones</div>
+      <div class="stat-val">2</div>
+    </div>
+  </div>
+
+  <div class="acct-card">
+    <div class="acct-header" onclick="toggle('pedregal')">
+      <div class="acct-left">
+        <div class="acct-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round">
+            <rect x="2" y="4" width="12" height="9" rx="1.5"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1"/>
+          </svg>
+        </div>
+        <div>
+          <div class="acct-name">Pedregal</div>
+          <div class="acct-meta">3 subcuentas · sin clasificaciones</div>
+        </div>
+      </div>
+      <div class="acct-right">
+        <span class="badge badge-ok">Al día</span>
+        <svg class="chevron open" id="chev-pedregal" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+      </div>
+    </div>
+    <div class="acct-body" id="body-pedregal">
+      <div class="sub-row">
+        <div class="sub-left">
+          <div class="sub-dot"></div>
+          <div>
+            <div class="sub-name">Bloques</div>
+            <div class="sub-count">2 proyectos</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="badge badge-ok">Al día</span>
+          <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+      <div class="sub-row">
+        <div class="sub-left">
+          <div class="sub-dot"></div>
+          <div>
+            <div class="sub-name">Quebradores</div>
+            <div class="sub-count">1 proyecto</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="badge badge-warn">1 pendiente</span>
+          <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+      <div class="sub-row">
+        <div class="sub-left">
+          <div class="sub-dot"></div>
+          <div>
+            <div class="sub-name">IZF</div>
+            <div class="sub-count">1 proyecto</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="badge badge-ok">Al día</span>
+          <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="acct-card">
+    <div class="acct-header" onclick="toggle('britt')">
+      <div class="acct-left">
+        <div class="acct-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round">
+            <rect x="2" y="4" width="12" height="9" rx="1.5"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1"/>
+          </svg>
+        </div>
+        <div>
+          <div class="acct-name">Café Britt</div>
+          <div class="acct-meta">6 subcuentas · 2 clasificaciones</div>
+        </div>
+      </div>
+      <div class="acct-right">
+        <span class="badge badge-warn">1 factura pendiente</span>
+        <svg class="chevron open" id="chev-britt" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+      </div>
+    </div>
+    <div class="acct-body" id="body-britt">
+
+      <div class="clasificacion-group">
+        <div class="clasificacion-header" onclick="toggleClasif('ato')">
+          <span class="clasificacion-tag">ATO Juan Santamaría</span>
+          <span class="clasificacion-meta">3 subcuentas</span>
+          <svg class="chev-sm open" id="chev-ato" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+        <div class="clasificacion-subs" id="subs-ato">
+          <div class="sub-row-indented">
+            <div class="sub-left">
+              <div class="sub-dot"></div>
+              <div>
+                <div class="sub-name">Food Court #1</div>
+                <div class="sub-count">2 proyectos</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge badge-warn">1 pendiente</span>
+              <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+            </div>
+          </div>
+          <div class="sub-row-indented">
+            <div class="sub-left">
+              <div class="sub-dot"></div>
+              <div>
+                <div class="sub-name">Food Court #2</div>
+                <div class="sub-count">1 proyecto</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge badge-ok">Al día</span>
+              <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+            </div>
+          </div>
+          <div class="sub-row-indented">
+            <div class="sub-left">
+              <div class="sub-dot"></div>
+              <div>
+                <div class="sub-name">Mercadito Gourmet</div>
+                <div class="sub-count">1 proyecto</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge badge-ok">Al día</span>
+              <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="clasificacion-group">
+        <div class="clasificacion-header" onclick="toggleClasif('sedes')">
+          <span class="clasificacion-tag">SEDES</span>
+          <span class="clasificacion-meta">3 subcuentas</span>
+          <svg class="chev-sm open" id="chev-sedes" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+        <div class="clasificacion-subs" id="subs-sedes">
+          <div class="sub-row-indented">
+            <div class="sub-left">
+              <div class="sub-dot"></div>
+              <div>
+                <div class="sub-name">BALI</div>
+                <div class="sub-count">1 proyecto</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge badge-ok">Al día</span>
+              <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+            </div>
+          </div>
+          <div class="sub-row-indented">
+            <div class="sub-left">
+              <div class="sub-dot"></div>
+              <div>
+                <div class="sub-name">SWT SJ</div>
+                <div class="sub-count">2 proyectos</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge badge-ok">Al día</span>
+              <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+            </div>
+          </div>
+          <div class="sub-row-indented">
+            <div class="sub-left">
+              <div class="sub-dot"></div>
+              <div>
+                <div class="sub-name">SWT LIB</div>
+                <div class="sub-count">1 proyecto</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge badge-ok">Al día</span>
+              <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggle(id) {
+  const body = document.getElementById('body-'+id);
+  const chev = document.getElementById('chev-'+id);
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  chev.classList.toggle('open', !open);
+}
+function toggleClasif(id) {
+  const subs = document.getElementById('subs-'+id);
+  const chev = document.getElementById('chev-'+id);
+  const open = subs.style.display !== 'none';
+  subs.style.display = open ? 'none' : 'block';
+  chev.classList.toggle('open', !open);
+}
+</script>

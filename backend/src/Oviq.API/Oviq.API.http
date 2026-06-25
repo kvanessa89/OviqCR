@@ -1,0 +1,6 @@
+@Oviq.API_HostAddress = http://localhost:5087
+
+GET {{Oviq.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

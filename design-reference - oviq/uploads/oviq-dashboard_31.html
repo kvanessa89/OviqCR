@@ -1,0 +1,2560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVIQ – Dashboard</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sidebar-bg: #012683;
+  --sidebar-dark: #011a63;
+  --sidebar-text: rgba(255,255,255,0.8);
+  --sidebar-width: 224px;
+  --topbar-h: 68px;
+  --body-bg: #f8f9fc;
+  --card-shadow: 0 .15rem 1.75rem 0 rgba(58,59,69,.13);
+  --text-main: #5a5c69;
+  --text-dark: #3a3b45;
+  --border: #e3e6f0;
+  --primary: #4e73df;
+  --success: #1cc88a;
+  --info: #36b9cc;
+  --warning: #f6c23e;
+  --danger: #e74a3b;
+}
+
+body { font-family:'Nunito',sans-serif; background:var(--body-bg); color:var(--text-main); display:flex; min-height:100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:var(--sidebar-width); min-height:100vh;
+  background:linear-gradient(180deg,#012683 10%,#011970 100%);
+  position:fixed; top:0; left:0; z-index:100;
+  display:flex; flex-direction:column;
+  box-shadow:4px 0 15px rgba(0,0,0,.15);
+}
+.sidebar-brand {
+  display:flex; align-items:center; gap:10px;
+  padding:0 20px; height:var(--topbar-h);
+  border-bottom:1px solid rgba(255,255,255,.15);
+  text-decoration:none; cursor:pointer;
+}
+.brand-icon {
+  width:34px; height:34px; border-radius:8px;
+  background:rgba(255,255,255,.2);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:.95rem; flex-shrink:0;
+}
+.brand-name { color:#fff; font-weight:900; font-size:1.15rem; letter-spacing:1px; text-transform:uppercase; }
+
+.sidebar-divider { border:none; border-top:1px solid rgba(255,255,255,.15); margin:6px 16px; }
+.sidebar-heading { padding:8px 20px 3px; font-size:.62rem; font-weight:800; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.13em; }
+
+.nav-item { list-style:none; }
+.nav-link {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 20px; color:var(--sidebar-text);
+  text-decoration:none; font-size:.85rem; font-weight:600;
+  border-left:3px solid transparent; transition:all .2s; cursor:pointer;
+}
+.nav-link i { width:16px; text-align:center; }
+.nav-link:hover, .nav-link.active { color:#fff; background:rgba(255,255,255,.1); border-left-color:#fff; }
+.collapse-arrow { margin-left:auto; font-size:.65rem; transition:transform .3s; }
+.nav-collapse { overflow:hidden; max-height:0; transition:max-height .35s ease; list-style:none; }
+.nav-collapse.open { max-height:400px; }
+.nav-collapse .nav-link { padding-left:48px; font-size:.8rem; }
+
+/* ── MAIN ── */
+.main-wrapper { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+
+/* ── TOPBAR ── */
+.topbar {
+  height:var(--topbar-h); background:#fff;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 24px; gap:14px;
+  position:sticky; top:0; z-index:50;
+  box-shadow:0 .1rem 1rem rgba(0,0,0,.07);
+}
+.topbar-search {
+  display:flex; align-items:center; gap:8px;
+  background:var(--body-bg); border:1px solid var(--border);
+  border-radius:999px; padding:6px 16px; max-width:280px; flex:1;
+}
+.topbar-search input { border:none; background:transparent; outline:none; font-family:'Nunito',sans-serif; font-size:.84rem; color:var(--text-main); width:100%; }
+.topbar-search i { color:#b7b9cc; font-size:.82rem; }
+.topbar-right { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.topbar-divider { border-right:1px solid var(--border); height:2rem; margin:0 6px; }
+.icon-btn { width:38px; height:38px; border-radius:50%; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-main); font-size:.95rem; position:relative; transition:background .2s; }
+.icon-btn:hover { background:var(--body-bg); }
+.badge-dot { position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:2px solid #fff; }
+.user-btn { display:flex; align-items:center; gap:9px; cursor:pointer; padding:5px 10px; border-radius:8px; transition:background .2s; }
+.user-btn:hover { background:var(--body-bg); }
+.user-avatar { width:34px; height:34px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.78rem; flex-shrink:0; }
+.user-name { font-weight:700; font-size:.82rem; color:var(--text-dark); }
+.user-role { font-size:.68rem; color:var(--text-main); }
+
+/* ── CONTENT ── */
+.content { padding:28px; flex:1; }
+
+/* page header */
+.page-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px; }
+.page-title { font-size:1.5rem; font-weight:800; color:var(--text-dark); }
+.breadcrumb { font-size:.78rem; color:var(--text-main); display:flex; gap:6px; align-items:center; }
+.breadcrumb a { color:var(--primary); text-decoration:none; cursor:pointer; }
+.breadcrumb a:hover { text-decoration:underline; }
+.breadcrumb .sep { color:#b7b9cc; font-size:.6rem; }
+
+/* stats */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:26px; }
+.stat-card {
+  background:#fff; border-radius:10px; padding:18px 22px;
+  box-shadow:var(--card-shadow); border-left:4px solid;
+  display:flex; align-items:center; justify-content:space-between;
+  cursor:pointer; transition:transform .2s,box-shadow .2s;
+}
+.stat-card:hover { transform:translateY(-3px); box-shadow:0 .5rem 2rem rgba(58,59,69,.18); }
+.stat-label { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; margin-bottom:3px; }
+.stat-value { font-size:1.45rem; font-weight:800; color:var(--text-dark); }
+.stat-icon { font-size:2rem; opacity:.2; }
+
+/* toolbar */
+.toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+.toolbar-title { font-weight:800; font-size:.95rem; color:var(--text-dark); flex:1; }
+.search-bar { display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--border); border-radius:8px; padding:7px 13px; }
+.search-bar input { border:none; outline:none; font-family:'Nunito',sans-serif; font-size:.84rem; color:var(--text-main); width:190px; }
+.search-bar i { color:#b7b9cc; }
+
+/* buttons */
+.btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:8px; border:none; font-family:'Nunito',sans-serif; font-size:.8rem; font-weight:700; cursor:pointer; transition:all .2s; }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { background:#3d5cd6; box-shadow:0 4px 12px rgba(78,115,223,.35); }
+.btn-outline { background:#fff; color:var(--text-main); border:1px solid var(--border); }
+.btn-outline:hover { background:var(--body-bg); }
+.btn-success { background:var(--success); color:#fff; }
+.btn-success:hover { background:#17a673; }
+.btn-sm { padding:6px 12px; font-size:.76rem; }
+.btn-icon { padding:6px 10px; }
+
+/* ── CARDS GRID ── */
+.cards-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+
+.card {
+  background:#fff; border-radius:12px;
+  box-shadow:var(--card-shadow);
+  border:2px solid transparent;
+  cursor:pointer; transition:transform .2s,box-shadow .2s,border-color .2s;
+  overflow:hidden;
+}
+.card:hover { transform:translateY(-4px); box-shadow:0 .6rem 2.5rem rgba(58,59,69,.17); border-color:var(--primary); }
+.card-stripe { height:7px; }
+.card-body { padding:18px 20px 14px; }
+.card-footer-bar { display:flex; gap:7px; padding:10px 20px; background:var(--body-bg); border-top:1px solid var(--border); }
+.card-footer-bar .btn { flex:1; justify-content:center; }
+
+/* client card specifics */
+.client-meta { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.c-avatar { width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; color:#fff; flex-shrink:0; }
+.c-name { font-size:.95rem; font-weight:800; color:var(--text-dark); }
+.c-sub { font-size:.72rem; color:var(--text-main); font-weight:600; }
+.status-badge { display:inline-flex; align-items:center; gap:5px; font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:999px; margin-bottom:10px; }
+.status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.s-active { background:#d1f2ea; color:#0f7a56; }
+.s-inactive { background:#fde8e6; color:#b02a20; }
+.s-prospect { background:#fef3cd; color:#856404; }
+.mini-stats { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--border); padding-top:12px; margin-bottom:10px; }
+.ms-item { text-align:center; }
+.ms-val { font-size:.9rem; font-weight:800; color:var(--text-dark); }
+.ms-lbl { font-size:.6rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-main); font-weight:700; }
+
+/* project card */
+.proj-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.proj-icon { width:40px; height:40px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1rem; color:#fff; flex-shrink:0; }
+.proj-name { font-size:.9rem; font-weight:800; color:var(--text-dark); }
+.proj-client { font-size:.72rem; color:var(--text-main); font-weight:600; }
+.progress-bar-wrap { background:#e3e6f0; border-radius:999px; height:7px; margin:10px 0 4px; overflow:hidden; }
+.progress-bar-fill { height:100%; border-radius:999px; transition:width .6s ease; }
+.progress-label { display:flex; justify-content:space-between; font-size:.68rem; color:var(--text-main); font-weight:700; margin-bottom:10px; }
+.task-preview { font-size:.75rem; color:var(--text-main); display:flex; align-items:center; gap:5px; }
+
+/* task card */
+.task-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
+.task-row:last-child { border-bottom:none; }
+.task-check { width:18px; height:18px; border-radius:5px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all .2s; }
+.task-check.done { background:var(--success); border-color:var(--success); color:#fff; font-size:.65rem; }
+.task-name { flex:1; font-size:.84rem; font-weight:600; color:var(--text-dark); }
+.task-name.done { text-decoration:line-through; color:var(--text-main); }
+.task-assignee { font-size:.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--body-bg); color:var(--text-main); border:1px solid var(--border); white-space:nowrap; }
+.task-due { font-size:.68rem; color:var(--text-main); white-space:nowrap; }
+.priority-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.p-high { background:var(--danger); }
+.p-mid { background:var(--warning); }
+.p-low { background:var(--success); }
+
+/* ── DETAIL PANEL ── */
+.detail-panel {
+  position:fixed; right:-420px; top:0; bottom:0; width:400px;
+  background:#fff; box-shadow:-8px 0 30px rgba(0,0,0,.12);
+  z-index:150; transition:right .35s cubic-bezier(.4,0,.2,1);
+  display:flex; flex-direction:column; overflow-y:auto;
+}
+.detail-panel.open { right:0; }
+.dp-header { padding:20px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+.dp-close { margin-left:auto; background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-main); }
+.dp-body { padding:22px; flex:1; }
+.dp-section { font-size:.65rem; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--primary); margin:16px 0 8px; }
+.dp-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:.84rem; }
+.dp-row:last-child { border-bottom:none; }
+.dp-lbl { color:var(--text-main); font-weight:600; }
+.dp-val { color:var(--text-dark); font-weight:700; text-align:right; }
+
+/* ── MODAL ── */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:#fff; border-radius:14px; width:500px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.22); overflow:hidden; animation:fadeUp .25s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+.modal-header { padding:18px 22px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+.modal-title { font-size:.98rem; font-weight:800; color:var(--text-dark); }
+.modal-close { background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-main); }
+.modal-body { padding:22px; }
+.modal-footer { padding:14px 22px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+.form-group { margin-bottom:14px; }
+.form-label { display:block; font-size:.78rem; font-weight:700; color:var(--text-dark); margin-bottom:5px; }
+.form-control { width:100%; padding:8px 13px; border:1px solid var(--border); border-radius:8px; font-family:'Nunito',sans-serif; font-size:.88rem; outline:none; transition:border-color .2s; }
+.form-control:focus { border-color:var(--primary); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:24px; right:24px; background:var(--success); color:#fff; padding:12px 20px; border-radius:10px; font-weight:700; font-size:.86rem; box-shadow:0 8px 24px rgba(28,200,138,.35); display:flex; align-items:center; gap:9px; transform:translateY(80px); opacity:0; transition:all .35s ease; z-index:300; }
+.toast.show { transform:none; opacity:1; }
+
+/* pagination */
+.pagination { display:flex; gap:6px; justify-content:center; margin-top:26px; }
+.page-btn { width:34px; height:34px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; font-size:.82rem; color:var(--text-main); display:flex; align-items:center; justify-content:center; transition:all .2s; }
+.page-btn:hover, .page-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+.worktype-badge { display:inline-flex; align-items:center; gap:5px; font-size:.68rem; font-weight:700; padding:4px 10px; border-radius:999px; line-height:1; }
+.status-badge  { line-height:1 !important; padding:4px 10px !important; vertical-align:middle; }
+.wt-horas    { background:#e8f0fe; color:#1a56db; }
+.wt-contrato { background:#fce8ff; color:#7e22ce; }
+
+.ticket-modal { width: 680px; max-width: 96vw; }
+.ticket-desc { background:var(--body-bg); border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:.88rem; color:var(--text-dark); line-height:1.6; min-height:60px; white-space:pre-wrap; }
+.comment-list { display:flex; flex-direction:column; gap:10px; max-height:260px; overflow-y:auto; padding-right:4px; }
+.comment-item { display:flex; gap:10px; }
+.comment-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.72rem; color:#fff; flex-shrink:0; }
+.comment-avatar.admin  { background:var(--primary); }
+.comment-avatar.worker { background:var(--success); }
+.comment-bubble { background:var(--body-bg); border:1px solid var(--border); border-radius:10px; padding:9px 13px; flex:1; }
+.comment-meta { display:flex; justify-content:space-between; margin-bottom:4px; }
+.comment-author { font-size:.75rem; font-weight:800; color:var(--text-dark); }
+.comment-date   { font-size:.68rem; color:var(--text-main); }
+.comment-text   { font-size:.84rem; color:var(--text-dark); line-height:1.5; }
+.comment-input-wrap { display:flex; gap:8px; margin-top:10px; }
+.comment-input-wrap textarea { flex:1; border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-family:'Nunito',sans-serif; font-size:.85rem; resize:none; outline:none; }
+.comment-input-wrap textarea:focus { border-color:var(--primary); }
+.comment-send { align-self:flex-end; }
+.role-tabs { display:flex; gap:6px; margin-bottom:10px; }
+.role-tab { padding:5px 14px; border-radius:999px; border:1px solid var(--border); font-size:.76rem; font-weight:700; cursor:pointer; transition:all .2s; background:#fff; color:var(--text-main); }
+.role-tab.active-admin  { background:var(--primary); color:#fff; border-color:var(--primary); }
+.role-tab.active-worker { background:var(--success); color:#fff; border-color:var(--success); }
+
+/* view hidden */
+.view { display:none; }
+.view.active { display:block; }
+
+/* back btn */
+.back-btn { display:inline-flex; align-items:center; gap:7px; font-size:.82rem; font-weight:700; color:var(--primary); cursor:pointer; background:none; border:none; padding:0; margin-bottom:4px; }
+.back-btn:hover { text-decoration:underline; }
+
+/* task list full page */
+.task-list-card { background:#fff; border-radius:12px; box-shadow:var(--card-shadow); overflow:hidden; }
+.task-list-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.task-list-body { padding:4px 0; }
+.task-list-row { display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--border); transition:background .15s; }
+.task-list-row:last-child { border-bottom:none; }
+.task-list-row:hover { background:var(--body-bg); }
+
+/* empty */
+.empty-state { text-align:center; padding:60px 20px; color:var(--text-main); }
+.empty-state i { font-size:2.5rem; opacity:.2; display:block; margin-bottom:12px; }
+/* calendar */
+.cal-day-header { padding:10px 0; text-align:center; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--text-main); background:var(--body-bg); border-bottom:1px solid var(--border); }
+.cal-day { min-height:110px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:6px; position:relative; }
+.cal-day:nth-child(7n) { border-right:none; }
+.cal-day-num { font-size:.78rem; font-weight:800; color:var(--text-dark); margin-bottom:4px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+.cal-day-num.today { background:var(--primary); color:#fff; }
+.cal-day.other-month { background:#fafbff; }
+.cal-day.other-month .cal-day-num { color:#c0c2ce; }
+.cal-ticket { font-size:.68rem; font-weight:700; padding:2px 6px; border-radius:4px; margin-bottom:2px; cursor:pointer; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; transition:opacity .15s; }
+.cal-ticket:hover { opacity:.8; }
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+    <a class="sidebar-brand" onclick="goView('proyectos')">
+    <img src="data:image/png;base64,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" alt="OVIQ" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+    <span class="brand-name">OVIQ</span>
+  </a>
+  <ul style="list-style:none;padding:10px 0;flex:1;">
+    <div class="sidebar-heading">Principal</div>
+    <li class="nav-item"><a class="nav-link" id="nav-dashboard" onclick="goView('dashboard')"><i class="fa-solid fa-gauge-high"></i> Dashboard</a></li>
+
+    <hr class="sidebar-divider">
+    <div class="sidebar-heading">Gestión</div>
+
+    <li class="nav-item"><a class="nav-link" id="nav-clientes" onclick="goView('clientes')"><i class="fa-solid fa-user-group"></i> Clientes</a></li>
+    <li class="nav-item"><a class="nav-link" id="nav-proyectos" onclick="goView('proyectos')"><i class="fa-solid fa-sitemap"></i> Proyectos</a></li>
+    <li class="nav-item"><a class="nav-link" id="nav-trabajadores" onclick="goView('trabajadores')"><i class="fa-solid fa-user-tie"></i> Trabajadores</a></li>
+    <li class="nav-item"><a class="nav-link" id="nav-tickets" onclick="goView('tickets')"><i class="fa-solid fa-ticket"></i> Tickets</a></li>
+    <li class="nav-item"><a class="nav-link" id="nav-calendario" onclick="goView('calendario')"><i class="fa-solid fa-calendar-days"></i> Calendario</a></li>
+    <li class="nav-item"><a class="nav-link" onclick="showToast('Módulo de Facturación')"><i class="fa-solid fa-file-invoice-dollar"></i> Facturación</a></li>
+    <li class="nav-item">
+      <a class="nav-link" onclick="toggleCollapse(this)">
+        <i class="fa-solid fa-chart-pie"></i> Reportes
+        <i class="fa-solid fa-chevron-down collapse-arrow"></i>
+      </a>
+      <ul class="nav-collapse" style="list-style:none;">
+        <li class="nav-item"><a class="nav-link" onclick="showToast('Reporte de Ventas')">Ventas</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showToast('Reporte de Actividad')">Actividad</a></li>
+      </ul>
+    </li>
+
+    <hr class="sidebar-divider">
+    <div class="sidebar-heading">Cuenta</div>
+    <li class="nav-item"><a class="nav-link" id="nav-configuracion" onclick="goView('configuracion')"><i class="fa-solid fa-gear"></i> Configuración</a></li>
+    <li class="nav-item"><a class="nav-link" onclick="showToast('Cerrando sesión...')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar sesión</a></li>
+  </ul>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main-wrapper">
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <div class="topbar-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Buscar..." id="globalSearch">
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="showToast('Sin notificaciones nuevas')"><i class="fa-solid fa-bell"></i><span class="badge-dot"></span></button>
+      <button class="icon-btn" onclick="showToast('Mensajes: 3 sin leer')"><i class="fa-solid fa-envelope"></i></button>
+      <div class="topbar-divider"></div>
+      <div class="user-btn">
+        <div class="user-avatar">AC</div>
+        <div><div class="user-name">Ana Carol</div><div class="user-role">Administrador</div></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════ VIEW: CLIENTES ══════════ -->
+  <div class="content view active" id="view-clientes">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Clientes</div>
+        <div class="breadcrumb"><a onclick="goView('clientes')">Inicio</a><span class="sep">›</span><span>Clientes</span></div>
+      </div>
+    </div>
+
+    <div class="stats-row" id="st-dynamic-stats" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+      <!-- populated dynamically -->
+    </div>
+
+    <div class="toolbar">
+      <span class="toolbar-title">Listado de Clientes</span>
+      <div class="search-bar"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Buscar cliente..." id="clientSearch" oninput="renderClients()"></div>
+      <button class="btn btn-outline btn-sm" onclick="showToast('Exportando...')"><i class="fa-solid fa-download"></i> Exportar</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modalCliente')"><i class="fa-solid fa-plus"></i> Nuevo Cliente</button>
+    </div>
+
+    <div class="cards-grid" id="clientsGrid"></div>
+    <div class="pagination">
+      <button class="page-btn active">1</button>
+      <button class="page-btn" onclick="showToast('Página 2')">2</button>
+      <button class="page-btn" onclick="showToast('Página 3')">3</button>
+    </div>
+  </div>
+
+  <!-- ══════════ VIEW: PROYECTOS ══════════ -->
+  <div class="content view" id="view-proyectos">
+    <div class="page-header">
+      <div>
+        <div id="proj-back-btn"></div>
+        <div class="page-title" id="proj-view-title">Proyectos</div>
+        <div class="breadcrumb" id="proj-breadcrumb">
+          <a onclick="goView('clientes')">Inicio</a><span class="sep">›</span>
+          <a onclick="goView('proyectos')">Proyectos</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row" id="ps-dynamic-stats" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+      <!-- populated dynamically -->
+    </div>
+
+    <div class="toolbar">
+      <span class="toolbar-title" id="proj-toolbar-title">Todos los proyectos</span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modalProyecto')"><i class="fa-solid fa-plus"></i> Nuevo Proyecto</button>
+    </div>
+    <div class="cards-grid" id="projectsGrid"></div>
+  </div>
+
+  <!-- ══════════ VIEW: TAREAS ══════════ -->
+  <div class="content view" id="view-tareas">
+    <div class="page-header">
+      <div>
+        <div id="task-back-btn"></div>
+        <div class="page-title" id="task-view-title">Tickets</div>
+        <div class="breadcrumb" id="task-breadcrumb"></div>
+      </div>
+    </div>
+
+    <div class="stats-row" id="ts-dynamic-stats" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <!-- populated dynamically -->
+    </div>
+
+    <div class="toolbar">
+      <span class="toolbar-title" id="task-toolbar-title">Tareas</span>
+      <span id="ts-filter-badge" style="font-size:.78rem;color:var(--primary);font-weight:700"></span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modalTarea')"><i class="fa-solid fa-plus"></i> Nuevo Ticket</button>
+    </div>
+
+    <div class="task-list-card">
+      <div class="task-list-header" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <i class="fa-solid fa-list-check" style="color:var(--primary)"></i>
+          <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Lista de tickets</span>
+        </div>
+        <span id="task-count-badge" style="background:var(--body-bg);border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:.72rem;font-weight:700;color:var(--text-main);"></span>
+      </div>
+      <div class="task-list-body" id="taskListBody"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ VIEW: DASHBOARD ══════════ -->
+  <div class="content view" id="view-dashboard">
+    <div class="page-header">
+      <div><div class="page-title">Dashboard</div><div class="breadcrumb"><span>Vista general</span></div></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card" style="border-left-color:var(--primary)" onclick="goView('clientes')">
+        <div><div class="stat-label" style="color:var(--primary)">Clientes</div><div class="stat-value" id="dash-clients">9</div></div>
+        <i class="fa-solid fa-users stat-icon" style="color:var(--primary)"></i>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--success)" onclick="goView('proyectos')">
+        <div><div class="stat-label" style="color:var(--success)">Proyectos</div><div class="stat-value" id="dash-projects">0</div></div>
+        <i class="fa-solid fa-diagram-project stat-icon" style="color:var(--success)"></i>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--info)" onclick="goView('tareas')">
+        <div><div class="stat-label" style="color:var(--info)">Tickets totales</div><div class="stat-value" id="dash-tasks">0</div></div>
+        <i class="fa-solid fa-list-check stat-icon" style="color:var(--info)"></i>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--warning)">
+        <div><div class="stat-label" style="color:var(--warning)">Tickets pendientes</div><div class="stat-value" id="dash-pending">0</div></div>
+        <i class="fa-solid fa-clock stat-icon" style="color:var(--warning)"></i>
+      </div>
+    </div>
+    <p style="color:var(--text-main);font-size:.88rem;">Haz clic en las cards para navegar a cada módulo.</p>
+  </div>
+
+
+  <!-- ══════════ VIEW: TRABAJADORES ══════════ -->
+  <div class="content view" id="view-trabajadores">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Trabajadores</div>
+        <div class="breadcrumb"><a onclick="goView('proyectos')">Inicio</a><span class="sep">›</span><span>Trabajadores</span></div>
+      </div>
+    </div>
+
+    <div class="stats-row" id="ws-dynamic-stats" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+      <!-- populated dynamically -->
+    </div>
+
+    <div class="toolbar">
+      <span class="toolbar-title">Equipo de trabajo</span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modalTrabajador')"><i class="fa-solid fa-plus"></i> Nuevo Trabajador</button>
+    </div>
+
+    <div class="cards-grid" id="workersGrid"></div>
+  </div>
+
+  <!-- ══════════ VIEW: PROYECTO DETALLE ══════════ -->
+  <div class="content view" id="view-proyecto-detalle">
+    <div class="page-header">
+      <div>
+        <div id="pd-back-btn"></div>
+        <div class="page-title" id="pd-title">Proyecto</div>
+        <div class="breadcrumb" id="pd-breadcrumb"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" id="pd-edit-btn"><i class="fa-solid fa-pen"></i> Editar Proyecto</button>
+        <button class="btn btn-primary btn-sm" id="pd-tickets-btn"><i class="fa-solid fa-list-check"></i> Ver en Tareas</button>
+      </div>
+    </div>
+
+    <!-- Stats cards - dynamic based on ticket statuses + high priority -->
+    <div class="stats-row" id="pd-stats-row" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <!-- populated dynamically -->
+    </div>
+
+    <!-- Main content grid -->
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;align-items:start">
+      <!-- Left column -->
+      <div>
+        <!-- Tickets list -->
+        <div class="task-list-card" style="margin-bottom:22px">
+          <div class="task-list-header" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-list-check" style="color:var(--primary)"></i>
+              <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Tickets del Proyecto</span>
+              <span id="pd-filter-badge" style="font-size:.72rem;color:var(--primary);font-weight:700"></span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <span id="pd-count-badge" style="background:var(--body-bg);border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:.72rem;font-weight:700;color:var(--text-main);align-self:center"></span>
+              <button class="btn btn-primary btn-sm" onclick="openNewTicketForProject()"><i class="fa-solid fa-plus"></i> Nuevo</button>
+            </div>
+          </div>
+          <div class="task-list-body" id="pd-task-list"></div>
+        </div>
+
+        <!-- Comments section -->
+        <div class="task-list-card">
+          <div class="task-list-header">
+            <i class="fa-solid fa-comments" style="color:var(--primary)"></i>
+            <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Comentarios del Proyecto</span>
+          </div>
+          <div style="padding:16px 20px">
+            <div class="comment-list" id="pd-comment-list"></div>
+            <div class="comment-input-wrap" style="margin-top:10px">
+              <textarea id="pd-comment-input" rows="2" placeholder="Escribe un comentario sobre el proyecto..."></textarea>
+              <button class="btn btn-primary btn-sm comment-send" onclick="addProjectComment()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: project info -->
+      <div class="task-list-card" style="padding:0;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+          <div id="pd-icon" style="width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;background:#4e73df"><i class="fa-solid fa-diagram-project"></i></div>
+          <div>
+            <div style="font-weight:800;font-size:.95rem;color:var(--text-dark)" id="pd-name-side">—</div>
+            <div style="font-size:.72rem;color:var(--text-main)" id="pd-client-side">—</div>
+          </div>
+        </div>
+        <div style="padding:16px 20px">
+          <div class="dp-section">Información General</div>
+          <div class="dp-row"><span class="dp-lbl">Estado</span><span class="dp-val" id="pd-status-val">—</span></div>
+          <div class="dp-row"><span class="dp-lbl">Fecha de inicio</span><span class="dp-val" id="pd-start">—</span></div>
+          <div class="dp-row"><span class="dp-lbl">Fecha de fin</span><span class="dp-val" id="pd-end">—</span></div>
+          <div class="dp-row"><span class="dp-lbl">Progreso</span><span class="dp-val" id="pd-progress">—</span></div>
+          <div class="dp-section" style="margin-top:16px">Descripción</div>
+          <div class="ticket-desc" id="pd-description" style="margin-top:4px">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ VIEW: CONFIGURACIÓN ══════════ -->
+  <div class="content view" id="view-configuracion">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Configuración</div>
+        <div class="breadcrumb"><a onclick="goView('proyectos')">Inicio</a><span class="sep">›</span><span>Configuración</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: CLIENTES -->
+    <div style="margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--primary)">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-user-group" style="color:#fff;font-size:.85rem"></i></div>
+        <span style="font-size:1rem;font-weight:800;color:var(--text-dark)">Clientes</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+        <div class="task-list-card" style="padding:0;overflow:hidden">
+          <div class="task-list-header" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-circle-dot" style="color:#6f42c1"></i>
+              <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Estado del Cliente</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfigItem('clientStatuses','client-status-list',document.getElementById('new-client-status').value)"><i class="fa-solid fa-plus"></i> Agregar</button>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+            <input class="form-control" id="new-client-status" placeholder="Nuevo estado..." style="flex:1">
+          </div>
+          <div id="client-status-list" style="padding:4px 0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: PROYECTOS -->
+    <div style="margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--success)">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--success);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-diagram-project" style="color:#fff;font-size:.85rem"></i></div>
+        <span style="font-size:1rem;font-weight:800;color:var(--text-dark)">Proyectos</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+        <div class="task-list-card" style="padding:0;overflow:hidden">
+          <div class="task-list-header" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-circle-dot" style="color:var(--danger)"></i>
+              <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Estado del Proyecto</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfigItem('projectStatuses','project-status-list',document.getElementById('new-project-status').value)"><i class="fa-solid fa-plus"></i> Agregar</button>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+            <input class="form-control" id="new-project-status" placeholder="Nuevo estado..." style="flex:1">
+          </div>
+          <div id="project-status-list" style="padding:4px 0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: TICKETS -->
+    <div style="margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--info)">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--info);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-ticket" style="color:#fff;font-size:.85rem"></i></div>
+        <span style="font-size:1rem;font-weight:800;color:var(--text-dark)">Tickets</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+        <div class="task-list-card" style="padding:0;overflow:hidden">
+          <div class="task-list-header" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-circle-dot" style="color:var(--info)"></i>
+              <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Estado del Ticket</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfigItem('ticketStatuses','ticket-status-list',document.getElementById('new-ticket-status').value)"><i class="fa-solid fa-plus"></i> Agregar</button>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+            <input class="form-control" id="new-ticket-status" placeholder="Nuevo estado..." style="flex:1">
+          </div>
+          <div id="ticket-status-list" style="padding:4px 0"></div>
+        </div>
+        <div class="task-list-card" style="padding:0;overflow:hidden">
+          <div class="task-list-header" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-circle-dot" style="color:var(--danger)"></i>
+              <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Prioridad del Ticket</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfigItem('ticketPriorities','ticket-priority-list',document.getElementById('new-ticket-priority').value)"><i class="fa-solid fa-plus"></i> Agregar</button>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+            <input class="form-control" id="new-ticket-priority" placeholder="Nueva prioridad..." style="flex:1">
+          </div>
+          <div id="ticket-priority-list" style="padding:4px 0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: TRABAJADORES -->
+    <div style="margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--warning)">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--warning);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-user-tie" style="color:#fff;font-size:.85rem"></i></div>
+        <span style="font-size:1rem;font-weight:800;color:var(--text-dark)">Trabajadores</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+        <div class="task-list-card" style="padding:0;overflow:hidden">
+          <div class="task-list-header" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-circle-dot" style="color:var(--primary)"></i>
+              <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Forma de Trabajo</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfigItem('workTypes','forma-work-list',document.getElementById('new-worktype').value)"><i class="fa-solid fa-plus"></i> Agregar</button>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+            <input class="form-control" id="new-worktype" placeholder="Nueva forma de trabajo..." style="flex:1">
+          </div>
+          <div id="forma-work-list" style="padding:4px 0"></div>
+        </div>
+        <div class="task-list-card" style="padding:0;overflow:hidden">
+          <div class="task-list-header" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-circle-dot" style="color:var(--success)"></i>
+              <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Tipos de Cargo</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfigItem('roleTypes','role-types-list',document.getElementById('new-role-type').value)"><i class="fa-solid fa-plus"></i> Agregar</button>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+            <input class="form-control" id="new-role-type" placeholder="Nuevo tipo de cargo..." style="flex:1">
+          </div>
+          <div id="role-types-list" style="padding:4px 0"></div>
+        </div>
+        <div class="task-list-card" style="padding:0;overflow:hidden">
+          <div class="task-list-header" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-circle-dot" style="color:var(--warning)"></i>
+              <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Estado del Trabajador</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfigItem('workerStatuses','worker-status-list',document.getElementById('new-worker-status').value)"><i class="fa-solid fa-plus"></i> Agregar</button>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+            <input class="form-control" id="new-worker-status" placeholder="Nuevo estado..." style="flex:1">
+          </div>
+          <div id="worker-status-list" style="padding:4px 0"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ VIEW: TICKETS (todos) ══════════ -->
+  <div class="content view" id="view-tickets">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Tickets</div>
+        <div class="breadcrumb"><a onclick="goView('proyectos')">Inicio</a><span class="sep">›</span><span>Todos los Tickets</span></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openAllTicketsModal()"><i class="fa-solid fa-plus"></i> Nuevo Ticket</button>
+    </div>
+
+    <div class="stats-row" id="tkt-dynamic-stats" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <!-- populated dynamically -->
+    </div>
+
+    <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+      <span class="toolbar-title">Todos los tickets</span>
+      <div class="search-bar"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="ticketSearch" placeholder="Buscar ticket..." oninput="renderAllTickets()"></div>
+      <select class="form-control" id="ticketProjectFilter" onchange="renderAllTickets()" style="width:180px;font-size:.84rem">
+        <option value="">Todos los proyectos</option>
+      </select>
+      <select class="form-control" id="ticketWorkerFilter" onchange="renderAllTickets()" style="width:180px;font-size:.84rem">
+        <option value="">Todos los trabajadores</option>
+        <option value="none">Sin asignar</option>
+      </select>
+    </div>
+
+    <div class="task-list-card">
+      <div class="task-list-header" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <i class="fa-solid fa-list-check" style="color:var(--primary)"></i>
+          <span style="font-weight:800;font-size:.9rem;color:var(--text-dark)">Lista de Tickets</span>
+          <span id="tkt-filter-badge" style="font-size:.72rem;color:var(--primary);font-weight:700"></span>
+        </div>
+        <span id="tkt-count-badge" style="background:var(--body-bg);border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:.72rem;font-weight:700;color:var(--text-main);"></span>
+      </div>
+      <div class="task-list-body" id="allTicketsBody"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ VIEW: CALENDARIO ══════════ -->
+  <div class="content view" id="view-calendario">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Calendario</div>
+        <div class="breadcrumb"><a onclick="goView('proyectos')">Inicio</a><span class="sep">›</span><span>Calendario</span></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-outline btn-sm" onclick="calNav(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <span id="cal-month-label" style="font-weight:800;font-size:.95rem;color:var(--text-dark);min-width:140px;text-align:center"></span>
+        <button class="btn btn-outline btn-sm" onclick="calNav(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        <button class="btn btn-outline btn-sm" onclick="calGoToday()">Hoy</button>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:12px;box-shadow:var(--card-shadow);overflow:hidden">
+      <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr)"></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap" id="cal-legend"></div>
+  </div>
+
+</div><!-- /main-wrapper -->
+
+<!-- ══ DETAIL PANEL ══ -->
+<div class="detail-panel" id="detailPanel">
+  <div class="dp-header">
+    <div class="c-avatar" id="dp-avatar" style="width:44px;height:44px;border-radius:10px;font-size:.95rem;"></div>
+    <div><div style="font-weight:800;font-size:.98rem;color:var(--text-dark)" id="dp-name"></div><div style="font-size:.76rem;color:var(--text-main);font-weight:600" id="dp-sub"></div></div>
+    <button class="dp-close" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<!-- Cliente -->
+<div class="modal-overlay" id="modalCliente" onclick="if(event.target===this)closeModal('modalCliente')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="fc-modal-title"><i class="fa-solid fa-user-plus" style="color:var(--primary);margin-right:8px"></i>Nuevo Cliente</span>
+      <button class="modal-close" onclick="closeModal('modalCliente')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="fc-name" placeholder="Nombre del cliente"></div>
+        <div class="form-group"><label class="form-label">Estado</label>
+          <select class="form-control" id="fc-status"></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="fc-description" rows="2" style="resize:vertical" placeholder="Descripción del cliente"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Contacto</label><input class="form-control" id="fc-contact" placeholder="Nombre completo"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="fc-email" type="email" placeholder="correo@empresa.com"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="fc-phone" placeholder="+506 0000-0000"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalCliente')">Cancelar</button>
+      <button class="btn btn-primary" id="fc-save-btn" onclick="saveClient()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Proyecto -->
+<div class="modal-overlay" id="modalProyecto" onclick="if(event.target===this)closeModal('modalProyecto')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="fp-modal-title"><i class="fa-solid fa-diagram-project" style="color:var(--primary);margin-right:8px"></i>Nuevo Proyecto</span>
+      <button class="modal-close" onclick="closeModal('modalProyecto')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nombre del proyecto *</label><input class="form-control" id="fp-name" placeholder="Ej. Rediseño web"></div>
+      <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="fp-description" rows="2" style="resize:vertical" placeholder="Descripción del proyecto"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Cliente</label>
+          <select class="form-control" id="fp-client"></select>
+        </div>
+        <div class="form-group"><label class="form-label">Estado</label>
+          <select class="form-control" id="fp-status"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Fecha inicio</label><input class="form-control" id="fp-start" type="date"></div>
+        <div class="form-group"><label class="form-label">Fecha fin</label><input class="form-control" id="fp-end" type="date"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalProyecto')">Cancelar</button>
+      <button class="btn btn-primary" id="fp-save-btn" onclick="saveProject()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tarea -->
+<div class="modal-overlay" id="modalTarea" onclick="if(event.target===this)closeModal('modalTarea')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><i class="fa-solid fa-list-check" style="color:var(--primary);margin-right:8px"></i>Nuevo Ticket</span>
+      <button class="modal-close" onclick="closeModal('modalTarea')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nombre del ticket *</label><input class="form-control" id="ft-name" placeholder="Ej. Diseñar mockups"></div>
+      <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="ft-description" placeholder="Detalla la tarea a realizar..." rows="3" style="resize:vertical;min-height:80px"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Proyecto</label><select class="form-control" id="ft-project"></select></div>
+        <div class="form-group" id="ft-assignee-group">
+          <label class="form-label">Asignado a</label>
+          <select class="form-control" id="ft-assignee"><option value="">Sin asignar</option></select>
+        </div>
+        <div class="form-group" id="ft-assignee-fixed-wrap" style="display:none">
+          <label class="form-label">Asignado a</label>
+          <div style="padding:8px 13px;background:var(--body-bg);border:1px solid var(--border);border-radius:8px;font-size:.88rem;font-weight:700;color:var(--text-dark);display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-user-check" style="color:var(--primary);font-size:.85rem"></i>
+            <span id="ft-assignee-fixed"></span>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Prioridad</label>
+          <select class="form-control" id="ft-priority"></select>
+        </div>
+        <div class="form-group"><label class="form-label">Estado</label>
+          <select class="form-control" id="ft-status"></select>
+        </div>
+        <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-control" id="ft-due" type="date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Fecha de asignación</label><input class="form-control" id="ft-assigned-date" type="date"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalTarea')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTask()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Trabajador -->
+<div class="modal-overlay" id="modalTrabajador" onclick="if(event.target===this)resetAndCloseWorkerModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><i class="fa-solid fa-user-tie" style="color:var(--primary);margin-right:8px"></i>Nuevo Trabajador</span>
+      <button class="modal-close" onclick="resetAndCloseWorkerModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre *</label><input class="form-control" id="fw-name" placeholder="Nombre completo"></div>
+        <div class="form-group"><label class="form-label">Cargo</label><select class="form-control" id="fw-role"><option>Técnico</option><option>Supervisor</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="fw-email" type="email" placeholder="correo@oviq.com"></div>
+        <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="fw-phone" placeholder="+506 0000-0000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Estado</label>
+          <select class="form-control" id="fw-status"><option>Activo</option><option>Inactivo</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Forma de trabajo</label>
+          <select class="form-control" id="fw-worktype"><option>Por horas</option><option>Por contrato</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="resetAndCloseWorkerModal()">Cancelar</button>
+      <button class="btn btn-primary" id="fw-save-btn" onclick="saveWorker()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ticket Detail/Edit -->
+<div class="modal-overlay" id="modalTicketDetail" onclick="if(event.target===this)closeModal('modalTicketDetail')">
+  <div class="modal ticket-modal">
+    <div class="modal-header">
+      <span class="modal-title" id="td-modal-title"><i class="fa-solid fa-ticket" style="color:var(--primary);margin-right:8px"></i>Ticket</span>
+      <button class="modal-close" onclick="closeModal('modalTicketDetail')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="max-height:72vh;overflow-y:auto">
+
+      <!-- UNIFIED EDIT FORM - always visible -->
+      <div id="td-view-mode">
+        <!-- Top badges row (view-only info) -->
+        <div id="td-badges-row" style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <span id="td-status-badge"></span>
+          <span id="td-priority-badge"></span>
+          <span id="td-due-wrap" style="margin-left:auto;font-size:.75rem;color:var(--text-main);display:flex;align-items:center;gap:4px;"><i class="fa-regular fa-calendar"></i><span id="td-due"></span></span>
+        </div>
+
+        <!-- EDIT FIELDS always shown -->
+        <div class="form-group"><label class="form-label">Nombre del ticket *</label><input class="form-control" id="te-name" placeholder="Nombre del ticket"></div>
+        <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="te-description" rows="3" style="resize:vertical;min-height:70px" placeholder="Sin descripción"></textarea></div>
+
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Proyecto</label><select class="form-control" id="te-project"></select></div>
+          <div class="form-group"><label class="form-label">Asignado a</label><select class="form-control" id="te-assignee"></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Estado</label>
+            <select class="form-control" id="te-done"></select>
+          </div>
+          <div class="form-group"><label class="form-label">Prioridad</label>
+            <select class="form-control" id="te-priority"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-control" id="te-due" type="date"></div>
+          <div class="form-group"><label class="form-label">Fecha de asignación</label><input class="form-control" id="te-assigned-date" type="date"></div>
+        </div>
+
+        <!-- Comentarios -->
+        <div class="dp-section" style="margin-top:16px">Comentarios</div>
+        <div class="comment-list" id="td-comments" style="max-height:180px;overflow-y:auto"></div>
+        <div class="comment-input-wrap" style="margin-top:10px">
+          <textarea id="td-comment-input" rows="2" placeholder="Escribe un comentario..."></textarea>
+          <button class="btn btn-primary btn-sm comment-send" onclick="addComment()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </div>
+
+      <!-- hidden legacy elements for compatibility -->
+      <div id="td-edit-mode" style="display:none"></div>
+      <span id="td-description" style="display:none"></span>
+      <span id="td-assignee" style="display:none"></span>
+      <span id="td-project" style="display:none"></span>
+      <span id="td-due2" style="display:none"></span>
+      <span id="td-assigned-date" style="display:none"></span>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="td-btn-cancel" onclick="closeModal('modalTicketDetail')">Cancelar</button>
+      <button class="btn btn-outline" id="td-btn-edit" style="display:none" onclick="switchToEditMode()"><i class="fa-solid fa-pen"></i> Editar</button>
+      <button class="btn btn-primary" id="td-btn-save" onclick="saveTicketEdit()"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastMsg">OK</span></div>
+
+<script>
+/* ══ DATA ══ */
+const COLORS  = ['#4e73df','#1cc88a','#36b9cc','#f6c23e','#e74a3b','#6f42c1','#fd7e14','#20c997','#858796'];
+
+let clients = [
+  { id:1,  name:'Pedregal',    description:'Cliente residencial Pedregal San Jose.',  status:'Activo',    contact:'—', email:'—', phone:'—', since:'2024' },
+  { id:2,  name:'Cafe Britt',  description:'Cliente corporativo Cafe Britt.',          status:'Activo',    contact:'—', email:'—', phone:'—', since:'2024' },
+  { id:3,  name:'Marco Ureña', description:'Cliente residencial Casa Marco Ureña.',   status:'Activo',    contact:'—', email:'—', phone:'—', since:'2023' },
+  { id:4,  name:'Carranza',    description:'Cliente Condominio Carranza Camaras.',    status:'Activo',    contact:'—', email:'—', phone:'—', since:'2024' },
+];
+
+let projects = [
+  { id:101, clientId:1, name:'Pedregal San Jose',            status:'En curso',   progress:65, start:'2024-01-10', end:'2024-06-30',  description:'Proyecto de instalación y configuración para el cliente Pedregal en San Jose.' },
+  { id:105, clientId:1, name:'Pedregal Guanacaste',          status:'En curso',   progress:20, start:'2024-05-01', end:'2024-12-31',  description:'Expansión del proyecto Pedregal hacia la región de Guanacaste.' },
+  { id:102, clientId:2, name:'Cafe Britt Instalacion',       status:'En curso',   progress:40, start:'2024-02-01', end:'2024-08-01',  description:'Instalación de sistema para sucursales de Cafe Britt.' },
+  { id:103, clientId:3, name:'Casa Marco Ureña',             status:'Completado', progress:100,start:'2023-08-01', end:'2024-01-15',  description:'Proyecto completado para Casa Marco Ureña.' },
+  { id:104, clientId:4, name:'Condominio Carranza Camaras',  status:'Pausado',    progress:30, start:'2024-01-15', end:'2024-07-15',  description:'Sistema de cámaras de seguridad para el Condominio Carranza.' },
+];
+
+let tasks = [
+  { id:1001, projectId:101, name:'Diseñar wireframes', assigneeId:1, priority:'Alta', due:'2024-04-15', assignedDate:'2024-03-01', done:true,
+    description:'Crear wireframes de baja fidelidad para todas las pantallas principales.',
+    comments:[
+      { author:'admin', name:'Ana Carol', text:'Por favor incluir versión móvil también.', date:'2024-03-02' },
+      { author:'worker', name:'Juan Víquez', text:'Entendido, incluiré breakpoints para mobile y desktop.', date:'2024-03-03' },
+    ]
+  },
+  { id:1002, projectId:101, name:'Desarrollar módulo login', assigneeId:2, priority:'Alta', due:'2024-05-01', assignedDate:'2024-04-01', done:true,
+    description:'Implementar autenticación con email y contraseña.',
+    comments:[
+      { author:'admin', name:'Ana Carol', text:'Agregar también login con Google OAuth.', date:'2024-04-02' },
+    ]
+  },
+  { id:1003, projectId:101, name:'Integrar API pagos', assigneeId:2, priority:'Alta', due:'2024-05-20', assignedDate:'2024-04-15', done:false,
+    description:'Integrar pasarela de pagos con Stripe.',
+    comments:[]
+  },
+  { id:1004, projectId:101, name:'Testing QA', assigneeId:3, priority:'Media', due:'2024-06-01', assignedDate:'2024-05-15', done:false,
+    description:'Realizar pruebas funcionales y de regresión.',
+    comments:[]
+  },
+  { id:1006, projectId:102, name:'Levantamiento de requerimientos', assigneeId:4, priority:'Alta', due:'2024-02-15', assignedDate:'2024-01-20', done:true,
+    description:'Reuniones con stakeholders para documentar requerimientos del sistema POS.',
+    comments:[
+      { author:'worker', name:'Marco Sánchez', text:'Documento de requerimientos completado.', date:'2024-02-10' },
+    ]
+  },
+  { id:1007, projectId:102, name:'Diseño de interfaz', assigneeId:5, priority:'Media', due:'2024-03-10', assignedDate:'2024-02-20', done:false,
+    description:'Diseñar UI del sistema POS.',
+    comments:[]
+  },
+  { id:1008, projectId:103, name:'Mockup portal', assigneeId:1, priority:'Alta', due:'2024-04-20', assignedDate:'2024-04-01', done:true,
+    description:'Crear mockups del portal web corporativo.',
+    comments:[]
+  },
+  { id:1009, projectId:104, name:'Instalación de cámaras', assigneeId:3, priority:'Media', due:'2024-04-01', assignedDate:'2024-03-01', done:false,
+    description:'Instalación y configuración del sistema de cámaras de seguridad.',
+    comments:[]
+  },
+  { id:1010, projectId:105, name:'Levantamiento del sitio Guanacaste', assigneeId:1, priority:'Alta', due:'2024-06-15', assignedDate:'2024-05-01', done:true,
+    description:'Visita técnica al sitio en Guanacaste para evaluar condiciones y requerimientos del proyecto.',
+    comments:[
+      { author:'admin', name:'Ana Carol', text:'Confirmar disponibilidad del equipo para la visita.', date:'2024-05-02' },
+      { author:'worker', name:'Juan Víquez', text:'Visita completada. Se adjunta informe técnico.', date:'2024-06-10' },
+    ]
+  },
+  { id:1011, projectId:105, name:'Instalación de infraestructura', assigneeId:2, priority:'Alta', due:'2024-09-30', assignedDate:'2024-07-01', done:false,
+    description:'Instalación de la infraestructura técnica principal: cableado, equipos y configuración inicial.',
+    comments:[]
+  },
+  { id:1012, projectId:105, name:'Pruebas y entrega', assigneeId:1, priority:'Media', due:'2024-12-15', assignedDate:'2024-11-01', done:false,
+    description:'Pruebas funcionales del sistema instalado y entrega formal al cliente.',
+    comments:[]
+  },
+];
+
+let workers = [
+  { id:1, name:'Juan Víquez',     role:'Supervisor', email:'jjj@gmail.com', phone:'8444-4444', status:'Activo',   workType:'Por horas'    },
+  { id:2, name:'Ricardo Víquez',  role:'Supervisor', email:'uuu@gmail.com', phone:'8777-7777', status:'Activo',   workType:'Por contrato' },
+  { id:3, name:'Felipe Carranza', role:'Técnico',    email:'fff@gmail.com', phone:'8999-9999', status:'Inactivo', workType:'Por horas'    },
+  { id:4, name:'Marco Sánchez',   role:'Técnico',    email:'mmm@gmail.com', phone:'8333-3333', status:'Inactivo', workType:'Por horas'    },
+];
+
+/* ══ STATE ══ */
+let currentView = 'clientes';
+let currentClientFilter = 'todos';
+let currentProjectFilter = 'todos';
+let currentTaskFilter = null;   // null = all, string = status filter, 'alta-prioridad' = high priority
+let currentPdFilter = null;     // filter for proyecto-detalle ticket list
+let contextClientId = null;
+let contextWorkerId = null;
+let contextProjectId = null;
+
+/* ══ NAVIGATION ══ */
+function goView(view, opts={}) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  const navEl = document.getElementById('nav-'+view);
+  if(navEl) navEl.classList.add('active');
+  currentView = view;
+  closeDetail();
+
+  if(view==='trabajadores') {
+    contextWorkerId = null;
+    renderWorkerStats(); renderWorkers();
+  } else if(view==='clientes') {
+    contextWorkerId = null;
+    contextClientId = null; contextProjectId = null;
+    renderClientStats(); renderClients();
+  } else if(view==='proyectos') {
+    contextClientId = opts.clientId || null;
+    contextProjectId = null;
+    currentProjectFilter = 'todos';
+    setupProjectView();
+    renderProjectStats();
+    renderProjects();
+  } else if(view==='tareas') {
+    contextProjectId = opts.projectId || null;
+    contextClientId  = opts.clientId  || null;
+    contextWorkerId  = opts.workerId  || null;
+    currentTaskFilter = null;
+    if(contextWorkerId) {
+      setupWorkerTaskView(contextWorkerId);
+    } else {
+      setupTaskView();
+    }
+    renderTaskStats();
+    renderTasks();
+  } else if(view==='proyecto-detalle') {
+    contextProjectId = opts.projectId || null;
+    renderProjectDetail(contextProjectId);
+  } else if(view==='tickets') {
+    contextProjectId = null; contextClientId = null; contextWorkerId = null;
+    currentTicketStatusFilter = null;
+    renderAllTicketStats();
+    renderAllTickets();
+    populateTicketProjectFilter();
+    populateTicketWorkerFilter();
+  } else if(view==='calendario') {
+    renderCalendar();
+  } else if(view==='configuracion') {
+    renderConfigPage();
+  } else if(view==='dashboard') {
+    renderDashboard();
+  }
+}
+
+/* ══ CLIENT VIEW ══ */
+function getInitials(name) { return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function statusClass(s) { return s==='Activo'?'s-active':s==='Inactivo'?'s-inactive':'s-prospect'; }
+
+function clientProjectCount(cid) { return projects.filter(p=>p.clientId===cid).length; }
+function clientTaskCount(cid) {
+  const pids = projects.filter(p=>p.clientId===cid).map(p=>p.id);
+  return tasks.filter(t=>pids.includes(t.projectId)).length;
+}
+
+function renderClientStats() {
+  const totalEl = document.getElementById('st-total');
+  if(totalEl) totalEl.textContent = clients.length;
+  configData.clientStatuses.forEach((status, i) => {
+    const el = document.getElementById('st-status-' + i);
+    if(el) el.textContent = clients.filter(c=>c.status===status).length;
+  });
+}
+
+function filterClients(s) { currentClientFilter=s; renderClients(); }
+
+function renderClients() {
+  const q = (document.getElementById('clientSearch')||{}).value?.toLowerCase()||'';
+  let list = clients.filter(c=>{
+    const matchS = currentClientFilter==='todos'||c.status===currentClientFilter;
+    const matchQ = !q||c.name.toLowerCase().includes(q)||(c.description||'').toLowerCase().includes(q);
+    return matchS && matchQ;
+  });
+  const grid = document.getElementById('clientsGrid');
+  if(!list.length){ grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="fa-solid fa-magnifying-glass"></i>Sin clientes encontrados</div>`; return; }
+  grid.innerHTML = list.map((c,i)=>{
+    const ci = clients.indexOf(c);
+    const color = COLORS[ci%COLORS.length];
+    const clientProjects = projects.filter(p=>p.clientId===c.id);
+    const tc = clientTaskCount(c.id);
+    const projListHtml = clientProjects.length
+      ? clientProjects.map(p=>`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:.78rem;">
+          <i class="fa-solid fa-diagram-project" style="color:${COLORS[projects.indexOf(p)%COLORS.length]};font-size:.72rem"></i>
+          <span style="font-weight:700;color:var(--text-dark);flex:1">${p.name}</span>
+          <span style="font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;background:${projStatusColor(p.status)}22;color:${projStatusColor(p.status)}">${p.status}</span>
+        </div>`).join('')
+      : '<div style="font-size:.78rem;color:var(--text-main);padding:6px 0">Sin proyectos asignados</div>';
+    return `
+    <div class="card">
+      <div class="card-stripe" style="background:${color}"></div>
+      <div class="card-body">
+        <div class="client-meta">
+          <div class="c-avatar" style="background:${color}">${getInitials(c.name)}</div>
+          <div>
+            <div class="c-name">${c.name}</div>
+            <div class="c-sub" style="margin-top:2px">${c.description||'Sin descripción'}</div>
+          </div>
+        </div>
+        <span class="status-badge ${statusClass(c.status)}"><span class="status-dot"></span>${c.status}</span>
+        <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--primary);margin:10px 0 6px">
+          <i class="fa-solid fa-sitemap" style="margin-right:4px;font-size:.65rem"></i>Proyectos (${clientProjects.length})
+        </div>
+        <div style="max-height:110px;overflow-y:auto">${projListHtml}</div>
+      </div>
+      <div class="card-footer-bar">
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openClientDetail(${c.id})"><i class="fa-solid fa-eye"></i> Ver</button>
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editClient(${c.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();goView('proyectos',{clientId:${c.id}})"><i class="fa-solid fa-sitemap"></i> Proyectos</button>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="event.stopPropagation();deleteClient(${c.id})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openClientDetail(id) {
+  const c = clients.find(x=>x.id===id);
+  const i = clients.indexOf(c);
+  const color = COLORS[i%COLORS.length];
+  document.getElementById('dp-avatar').style.background=color;
+  document.getElementById('dp-avatar').textContent=getInitials(c.name);
+  document.getElementById('dp-name').textContent=c.name;
+  document.getElementById('dp-sub').textContent=c.description||'Sin descripción';
+  const clientProjects = projects.filter(p=>p.clientId===c.id);
+  const projHtml = clientProjects.map(p=>`<div class="dp-row"><span class="dp-lbl">${p.name}</span><span class="dp-val" style="font-size:.72rem;padding:2px 8px;border-radius:999px;background:${projStatusColor(p.status)}22;color:${projStatusColor(p.status)}">${p.status}</span></div>`).join('') || '<div style="font-size:.82rem;color:var(--text-main);padding:8px 0">Sin proyectos</div>';
+  document.getElementById('dp-body').innerHTML=`
+    <div class="dp-section">Información</div>
+    <div class="dp-row"><span class="dp-lbl">Estado</span><span class="dp-val"><span class="status-badge ${statusClass(c.status)}" style="margin:0"><span class="status-dot"></span>${c.status}</span></span></div>
+    <div class="dp-row"><span class="dp-lbl">Descripción</span><span class="dp-val" style="text-align:right;max-width:180px">${c.description||'—'}</span></div>
+    <div class="dp-section">Proyectos</div>
+    ${projHtml}
+    <div style="margin-top:18px;display:flex;gap:9px;">
+      <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="closeDetail();goView('proyectos',{clientId:${c.id}})"><i class="fa-solid fa-diagram-project"></i> Ver Proyectos</button>
+    </div>`;
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function editClient(id) {
+  const c = clients.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('fc-modal-title').innerHTML = '<i class="fa-solid fa-user-pen" style="color:var(--primary);margin-right:8px"></i>Editar Cliente';
+  document.getElementById('fc-name').value = c.name;
+  const descEl = document.getElementById('fc-description');
+  if(descEl) descEl.value = c.description || '';
+  document.getElementById('fc-contact').value = c.contact !== '—' ? (c.contact||'') : '';
+  document.getElementById('fc-email').value = c.email !== '—' ? (c.email||'') : '';
+  document.getElementById('fc-phone').value = c.phone !== '—' ? (c.phone||'') : '';
+  document.getElementById('fc-status').innerHTML = configData.clientStatuses.map(v=>`<option ${v===c.status?'selected':''}>${v}</option>`).join('');
+  document.getElementById('fc-save-btn').onclick = function() { updateClient(id); };
+  document.getElementById('modalCliente').classList.add('open');
+}
+
+function updateClient(id) {
+  const name = document.getElementById('fc-name').value.trim();
+  if(!name){ showToast('Ingresa el nombre'); return; }
+  const c = clients.find(x=>x.id===id);
+  c.name = name;
+  c.description = (document.getElementById('fc-description')||{}).value || '';
+  c.contact = document.getElementById('fc-contact').value || '—';
+  c.email = document.getElementById('fc-email').value || '—';
+  c.phone = document.getElementById('fc-phone').value || '—';
+  c.status = document.getElementById('fc-status').value;
+  document.getElementById('fc-modal-title').innerHTML = '<i class="fa-solid fa-user-plus" style="color:var(--primary);margin-right:8px"></i>Nuevo Cliente';
+  document.getElementById('fc-save-btn').onclick = saveClient;
+  closeModal('modalCliente');
+  renderClientStats(); renderClients();
+  showToast(`Cliente "${name}" actualizado`);
+}
+
+function deleteClient(id) {
+  const c = clients.find(x=>x.id===id);
+  if(!confirm(`¿Eliminar "${c.name}"?`)) return;
+  clients=clients.filter(x=>x.id!==id);
+  renderClientStats(); renderClients();
+  showToast('Cliente eliminado');
+}
+
+function saveClient() {
+  const name = document.getElementById('fc-name').value.trim();
+  if(!name){ showToast('Ingresa el nombre'); return; }
+  clients.unshift({ id:Date.now(), name, description:(document.getElementById('fc-description')||{}).value||'', contact:document.getElementById('fc-contact').value||'—', email:document.getElementById('fc-email').value||'—', phone:document.getElementById('fc-phone').value||'—', status:document.getElementById('fc-status').value, since:'Hoy' });
+  renderClientStats(); renderClients();
+  closeModal('modalCliente');
+  showToast(`Cliente "${name}" creado`);
+  ['fc-name','fc-contact','fc-email','fc-phone'].forEach(fid=>{ const el=document.getElementById(fid); if(el) el.value=''; });
+  const descEl = document.getElementById('fc-description');
+  if(descEl) descEl.value='';
+}
+
+/* ══ PROJECT VIEW ══ */
+function setupProjectView() {
+  const backBtn = document.getElementById('proj-back-btn');
+  const bc = document.getElementById('proj-breadcrumb');
+  if(contextClientId) {
+    const cl = clients.find(c=>c.id===contextClientId);
+    backBtn.innerHTML=`<button class="back-btn" onclick="goView('clientes')"><i class="fa-solid fa-arrow-left"></i> Volver a Clientes</button>`;
+    document.getElementById('proj-view-title').textContent=`Proyectos – ${cl.name}`;
+    document.getElementById('proj-toolbar-title').textContent=`Proyectos de ${cl.name}`;
+    bc.innerHTML=`<a onclick="goView('clientes')">Inicio</a><span class="sep">›</span><a onclick="goView('clientes')">Clientes</a><span class="sep">›</span><span>${cl.name}</span><span class="sep">›</span><span>Proyectos</span>`;
+  } else {
+    backBtn.innerHTML='';
+    document.getElementById('proj-view-title').textContent='Proyectos';
+    document.getElementById('proj-toolbar-title').textContent='Todos los proyectos';
+    bc.innerHTML=`<a onclick="goView('clientes')">Inicio</a><span class="sep">›</span><span>Proyectos</span>`;
+  }
+}
+
+function filterProjects(status) {
+  currentProjectFilter = status;
+  renderProjectStats();
+  renderProjects();
+}
+
+function getProjectList() {
+  let list = contextClientId ? projects.filter(p=>p.clientId===contextClientId) : projects;
+  if(currentProjectFilter && currentProjectFilter !== 'todos') {
+    list = list.filter(p=>p.status===currentProjectFilter);
+  }
+  return list;
+}
+
+function getProjectListAll() {
+  return contextClientId ? projects.filter(p=>p.clientId===contextClientId) : projects;
+}
+
+function renderProjectStats() {
+  const all = getProjectListAll();
+  const totalEl = document.getElementById('ps-total');
+  if(totalEl) totalEl.textContent = all.length;
+  configData.projectStatuses.forEach((status, i) => {
+    const el = document.getElementById('ps-status-' + i);
+    if(el) el.textContent = all.filter(p=>p.status===status).length;
+  });
+}
+
+function projStatusColor(s) { return s==='En curso'?'var(--success)':s==='Completado'?'var(--primary)':'var(--warning)'; }
+
+function renderProjects() {
+  const list = getProjectList();
+  const grid = document.getElementById('projectsGrid');
+  if(!list.length){ grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><i class="fa-solid fa-diagram-project"></i>Sin proyectos</div>`; return; }
+  grid.innerHTML = list.map((p,i)=>{
+    const cl = clients.find(c=>c.id===p.clientId);
+    const color = COLORS[i%COLORS.length];
+    const tc = tasks.filter(t=>t.projectId===p.id).length;
+    const tdone = tasks.filter(t=>t.projectId===p.id&&t.done).length;
+    return `
+    <div class="card" onclick="goView('proyecto-detalle',{projectId:${p.id}})">
+      <div class="card-stripe" style="background:${color}"></div>
+      <div class="card-body">
+        <div class="proj-header">
+          <div class="proj-icon" style="background:${color}"><i class="fa-solid fa-diagram-project"></i></div>
+          <div><div class="proj-name">${p.name}</div><div class="proj-client"><i class="fa-solid fa-building" style="font-size:.6rem;margin-right:3px"></i>${cl?cl.name:'—'}</div></div>
+        </div>
+        <span class="status-badge" style="background:${projStatusColor(p.status)}22;color:${projStatusColor(p.status)};margin-bottom:8px"><span class="status-dot" style="background:${projStatusColor(p.status)}"></span>${p.status}</span>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${p.progress}%;background:${color}"></div></div>
+        <div class="progress-label"><span>Progreso</span><span>${p.progress}%</span></div>
+        <div class="task-preview"><i class="fa-solid fa-list-check" style="font-size:.7rem"></i>${tdone}/${tc} tickets completados</div>
+      </div>
+      <div class="card-footer-bar">
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();goView('proyecto-detalle',{projectId:${p.id}})"><i class="fa-solid fa-eye"></i> Ver</button>
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editProject(${p.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();goView('tareas',{projectId:${p.id},clientId:${p.clientId}})"><i class="fa-solid fa-list-check"></i> Tickets</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openProjectDetail(id) {
+  const p = projects.find(x=>x.id===id);
+  const cl = clients.find(c=>c.id===p.clientId);
+  const i = projects.indexOf(p);
+  const color = COLORS[i%COLORS.length];
+  const tc = tasks.filter(t=>t.projectId===p.id).length;
+  const tdone = tasks.filter(t=>t.projectId===p.id&&t.done).length;
+  document.getElementById('dp-avatar').style.background=color;
+  document.getElementById('dp-avatar').innerHTML='<i class="fa-solid fa-diagram-project" style="font-size:.95rem"></i>';
+  document.getElementById('dp-name').textContent=p.name;
+  document.getElementById('dp-sub').textContent=cl?cl.name:'';
+  document.getElementById('dp-body').innerHTML=`
+    <div class="dp-section">Detalle</div>
+    <div class="dp-row"><span class="dp-lbl">Estado</span><span class="dp-val">${p.status}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Inicio</span><span class="dp-val">${p.start}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Límite</span><span class="dp-val">${p.end}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Progreso</span><span class="dp-val">${p.progress}%</span></div>
+    <div class="dp-section">Tickets</div>
+    <div class="dp-row"><span class="dp-lbl">Total</span><span class="dp-val">${tc}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Completados</span><span class="dp-val">${tdone}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Pendientes</span><span class="dp-val">${tc-tdone}</span></div>
+    <div style="margin-top:18px">
+      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" onclick="closeDetail();goView('tareas',{projectId:${p.id},clientId:${p.clientId}})"><i class="fa-solid fa-list-check"></i> Ver Tickets</button>
+    </div>`;
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function editProject(id) {
+  const p = projects.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('fp-modal-title').innerHTML = '<i class="fa-solid fa-diagram-project" style="color:var(--primary);margin-right:8px"></i>Editar Proyecto';
+  document.getElementById('fp-name').value = p.name;
+  const descEl = document.getElementById('fp-description');
+  if(descEl) descEl.value = p.description || '';
+  document.getElementById('fp-client').innerHTML = clients.map(c=>`<option value="${c.id}" ${c.id===p.clientId?'selected':''}>${c.name}</option>`).join('');
+  document.getElementById('fp-status').innerHTML = configData.projectStatuses.map(v=>`<option ${v===p.status?'selected':''}>${v}</option>`).join('');
+  const startEl = document.getElementById('fp-start');
+  if(startEl) startEl.value = p.start !== '—' ? (p.start||'') : '';
+  const endEl = document.getElementById('fp-end');
+  if(endEl) endEl.value = p.end !== '—' ? (p.end||'') : '';
+  document.getElementById('fp-save-btn').onclick = function() { updateProject(id); };
+  document.getElementById('modalProyecto').classList.add('open');
+}
+
+function calcProjectProgress(id) {
+  const pt = tasks.filter(x=>x.projectId===id);
+  return pt.length ? Math.round(pt.filter(x=>x.done).length/pt.length*100) : 0;
+}
+
+function updateProject(id) {
+  const name = document.getElementById('fp-name').value.trim();
+  if(!name){ showToast('Ingresa el nombre del proyecto'); return; }
+  const p = projects.find(x=>x.id===id);
+  p.name = name;
+  p.description = (document.getElementById('fp-description')||{}).value || '';
+  p.clientId = parseInt(document.getElementById('fp-client').value);
+  p.status = document.getElementById('fp-status').value;
+  p.start = document.getElementById('fp-start').value || '—';
+  p.end = document.getElementById('fp-end').value || '—';
+  p.progress = calcProjectProgress(id);
+  document.getElementById('fp-modal-title').innerHTML = '<i class="fa-solid fa-diagram-project" style="color:var(--primary);margin-right:8px"></i>Nuevo Proyecto';
+  document.getElementById('fp-save-btn').onclick = saveProject;
+  closeModal('modalProyecto');
+  renderProjectStats(); renderProjects();
+  showToast(`Proyecto "${name}" actualizado`);
+}
+
+function saveProject() {
+  const name = document.getElementById('fp-name').value.trim();
+  if(!name){ showToast('Ingresa el nombre del proyecto'); return; }
+  const cid = parseInt(document.getElementById('fp-client').value);
+  const newP = { id:Date.now(), clientId:cid, name, description:(document.getElementById('fp-description')||{}).value||'', status:document.getElementById('fp-status').value, progress:0, start:document.getElementById('fp-start').value||'—', end:document.getElementById('fp-end').value||'—', comments:[] };
+  projects.push(newP);
+  renderProjectStats(); renderProjects();
+  closeModal('modalProyecto');
+  showToast(`Proyecto "${name}" creado`);
+  document.getElementById('fp-name').value='';
+  const descEl = document.getElementById('fp-description');
+  if(descEl) descEl.value='';
+}
+
+/* ══ TASK VIEW ══ */
+function setupWorkerTaskView(id) {
+  const w = workers.find(x=>x.id===id);
+  document.getElementById('task-view-title').textContent    = 'Tickets – ' + w.name;
+  document.getElementById('task-toolbar-title').textContent = 'Tickets de ' + w.name;
+  const bc = document.getElementById('task-breadcrumb');
+  bc.innerHTML = '';
+  const a = document.createElement('a');
+  a.textContent = 'Trabajadores';
+  a.onclick = function(){ goView('trabajadores'); };
+  bc.appendChild(a);
+  bc.insertAdjacentHTML('beforeend', '<span class="sep">›</span><span>' + w.name + '</span><span class="sep">›</span><span>Tickets</span>');
+  const bb = document.getElementById('task-back-btn');
+  bb.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'back-btn';
+  btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Volver a Trabajadores';
+  btn.onclick = function(){ goView('trabajadores'); };
+  bb.appendChild(btn);
+}
+
+
+function setupTaskView() {
+  const backBtn = document.getElementById('task-back-btn');
+  const bc = document.getElementById('task-breadcrumb');
+  if(contextProjectId) {
+    const p = projects.find(x=>x.id===contextProjectId);
+    const cl = clients.find(c=>c.id===p.clientId);
+    backBtn.innerHTML=`<button class="back-btn" onclick="goView('proyectos',{clientId:${p.clientId}})"><i class="fa-solid fa-arrow-left"></i> Volver a Proyectos</button>`;
+    document.getElementById('task-view-title').textContent=`Tickets – ${p.name}`;
+    document.getElementById('task-toolbar-title').textContent=`Tickets de ${p.name}`;
+    bc.innerHTML=`<a onclick="goView('clientes')">Inicio</a><span class="sep">›</span><a onclick="goView('clientes')">Clientes</a><span class="sep">›</span><a onclick="goView('proyectos',{clientId:${cl?cl.id:''}})">Proyectos</a><span class="sep">›</span><span>${p.name}</span><span class="sep">›</span><span>Tickets</span>`;
+  } else {
+    backBtn.innerHTML='';
+    document.getElementById('task-view-title').textContent='Tickets';
+    document.getElementById('task-toolbar-title').textContent='Todos los tickets';
+    bc.innerHTML=`<a onclick="goView('clientes')">Inicio</a><span class="sep">›</span><span>Tickets</span>`;
+  }
+}
+
+function getTaskList() {
+  if(contextWorkerId)  return tasks.filter(t=>t.assigneeId===contextWorkerId);
+  if(contextProjectId) return tasks.filter(t=>t.projectId===contextProjectId);
+  return tasks;
+}
+
+function getFilteredTaskList() {
+  const all = getTaskList();
+  if(!currentTaskFilter) return all;
+  if(currentTaskFilter === 'alta-prioridad') return all.filter(t=>t.priority==='Alta');
+  return all.filter(t=>(t.status||(t.done?'Completado':'Por asignar'))===currentTaskFilter);
+}
+
+function filterTasks(filter) {
+  currentTaskFilter = filter;
+  const badge = document.getElementById('ts-filter-badge');
+  if(badge) badge.textContent = filter ? (filter==='alta-prioridad' ? '— Alta prioridad' : `— ${filter}`) : '';
+  renderTaskStats(); renderTasks();
+}
+
+function renderTaskStats() {
+  const container = document.getElementById('ts-dynamic-stats');
+  if(!container) return;
+  const all = getTaskList();
+  const statColors = ['var(--success)','var(--warning)','var(--info)','#6f42c1','var(--primary)','var(--danger)'];
+  const icons = ['fa-circle-check','fa-clock','fa-spinner','fa-pause','fa-list','fa-circle-xmark'];
+
+  let html = `<div class="stat-card" style="border-left-color:var(--primary);cursor:pointer" onclick="filterTasks(null)">
+    <div><div class="stat-label" style="color:var(--primary)">Total</div><div class="stat-value">${all.length}</div></div>
+    <i class="fa-solid fa-list-check stat-icon" style="color:var(--primary)"></i>
+  </div>`;
+
+  configData.ticketStatuses.forEach((status, i) => {
+    const color = statColors[i % statColors.length];
+    const icon  = icons[i % icons.length];
+    const count = all.filter(t=>(t.status||(t.done?'Completado':'Por asignar'))===status).length;
+    html += `<div class="stat-card" style="border-left-color:${color};cursor:pointer" onclick="filterTasks('${status}')">
+      <div><div class="stat-label" style="color:${color}">${status}</div><div class="stat-value">${count}</div></div>
+      <i class="fa-solid ${icon} stat-icon" style="color:${color}"></i>
+    </div>`;
+  });
+
+  // Alta prioridad card
+  const highCount = all.filter(t=>t.priority==='Alta').length;
+  html += `<div class="stat-card" style="border-left-color:var(--danger);cursor:pointer" onclick="filterTasks('alta-prioridad')">
+    <div><div class="stat-label" style="color:var(--danger)">Alta Prioridad</div><div class="stat-value">${highCount}</div></div>
+    <i class="fa-solid fa-triangle-exclamation stat-icon" style="color:var(--danger)"></i>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+function priorityColor(p) { return p==='Alta'?'p-high':p==='Media'?'p-mid':'p-low'; }
+
+function getTicketStatusColor(status) {
+  const map = { 'Completado':'var(--success)', 'En curso':'var(--info)', 'En espera':'var(--warning)', 'Por asignar':'#856404' };
+  return map[status] || 'var(--text-main)';
+}
+
+function renderTasks() {
+  const list = getFilteredTaskList();
+  document.getElementById('task-count-badge').textContent=`${list.length} tickets`;
+  const body = document.getElementById('taskListBody');
+  if(!list.length){ body.innerHTML=`<div class="empty-state"><i class="fa-solid fa-list-check"></i>Sin tickets encontrados</div>`; return; }
+  body.innerHTML = list.map(t=>{
+    const ticketStatus = t.status||(t.done?'Completado':'Por asignar');
+    const sc = getTicketStatusColor(ticketStatus);
+    return `
+    <div class="task-list-row" id="trow-${t.id}" onclick="openTicketEdit(${t.id})" style="cursor:pointer">
+      <span class="priority-dot ${priorityColor(t.priority)}" title="${t.priority} prioridad"></span>
+      <span class="task-name" style="flex:2">${t.name}</span>
+      <span class="task-assignee">${getWorkerName(t.assigneeId)}</span>
+      <span style="font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;background:${sc}22;color:${sc};white-space:nowrap">${ticketStatus}</span>
+      <span class="task-due"><i class="fa-regular fa-calendar" style="margin-right:3px;font-size:.65rem"></i>${t.due||'—'}</span>
+      ${t.assignedDate && t.assignedDate !== '—' ? `<span class="task-due" style="color:var(--primary)"><i class="fa-solid fa-calendar-plus" style="margin-right:3px;font-size:.65rem"></i>${t.assignedDate}</span>` : ''}
+      <span style="margin-left:auto;display:flex;gap:4px">
+        <button onclick="event.stopPropagation();deleteTask(${t.id})" style="background:none;border:none;cursor:pointer;color:#b7b9cc;font-size:.8rem;padding:2px 4px;" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>
+      </span>
+    </div>`}).join('');
+}
+
+function toggleTask(id) {
+  const t = tasks.find(x=>x.id===id);
+  t.done=!t.done;
+  t.status = t.done ? 'Completado' : 'Por asignar';
+  const p = projects.find(x=>x.id===t.projectId);
+  if(p) { const pt = tasks.filter(x=>x.projectId===p.id); p.progress = pt.length ? Math.round(pt.filter(x=>x.done).length/pt.length*100) : 0; }
+  renderTaskStats(); renderTasks();
+}
+
+function deleteTask(id) {
+  if(!confirm('¿Eliminar este ticket?')) return;
+  const t = tasks.find(x=>x.id===id);
+  const pid = t ? t.projectId : null;
+  tasks=tasks.filter(x=>x.id!==id);
+  if(pid){ const p=projects.find(x=>x.id===pid); if(p){ const pt=tasks.filter(x=>x.projectId===pid); p.progress=pt.length?Math.round(pt.filter(x=>x.done).length/pt.length*100):0; } }
+  renderTaskStats(); renderTasks();
+  showToast('Ticket eliminado');
+}
+
+function saveTask() {
+  const name = document.getElementById('ft-name').value.trim();
+  if(!name){ showToast('Ingresa el nombre de la tarea'); return; }
+  const pid = parseInt(document.getElementById('ft-project').value);
+  const wid = parseInt(document.getElementById('ft-assignee').value)||null;
+  const status = document.getElementById('ft-status').value||'Por asignar';
+  tasks.push({ id:Date.now(), projectId:pid, name, description:document.getElementById('ft-description').value||'', assigneeId:wid, priority:document.getElementById('ft-priority').value, status, due:document.getElementById('ft-due').value||'—', assignedDate:document.getElementById('ft-assigned-date').value||'—', done:status==='Completado', comments:[] });
+  const p = projects.find(x=>x.id===pid);
+  if(p){ const pt=tasks.filter(x=>x.projectId===p.id); p.progress=pt.length?Math.round(pt.filter(x=>x.done).length/pt.length*100):0; }
+  renderTaskStats(); renderTasks();
+  closeModal('modalTarea');
+  showToast(`Ticket "${name}" creado`);
+  document.getElementById('ft-name').value=''; document.getElementById('ft-description').value=''; document.getElementById('ft-assignee').selectedIndex=0; document.getElementById('ft-assigned-date').value='';
+}
+
+/* ══ DASHBOARD ══ */
+function renderDashboard() {
+  document.getElementById('dash-clients').textContent=clients.length;
+  document.getElementById('dash-projects').textContent=projects.length;
+  document.getElementById('dash-tasks').textContent=tasks.length;
+  document.getElementById('dash-pending').textContent=tasks.filter(t=>!t.done).length;
+}
+
+/* ══ MODAL HELPERS ══ */
+function openModal(id) {
+  // populate selects
+  if(id==='modalCliente') {
+    const sel = document.getElementById('fc-status');
+    if(sel) sel.innerHTML = configData.clientStatuses.map(v=>`<option>${v}</option>`).join('');
+    document.getElementById('fc-modal-title').innerHTML = '<i class="fa-solid fa-user-plus" style="color:var(--primary);margin-right:8px"></i>Nuevo Cliente';
+    document.getElementById('fc-save-btn').onclick = saveClient;
+    // clear fields
+    ['fc-name','fc-contact','fc-email','fc-phone'].forEach(fid=>{ const el=document.getElementById(fid); if(el) el.value=''; });
+    const descEl = document.getElementById('fc-description');
+    if(descEl) descEl.value='';
+  }
+  if(id==='modalProyecto') {
+    document.getElementById('fp-modal-title').innerHTML = '<i class="fa-solid fa-diagram-project" style="color:var(--primary);margin-right:8px"></i>Nuevo Proyecto';
+    document.getElementById('fp-save-btn').onclick = saveProject;
+    const sel = document.getElementById('fp-client');
+    sel.innerHTML = clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    if(contextClientId) sel.value=contextClientId;
+    const fpStatus = document.getElementById('fp-status');
+    if(fpStatus) fpStatus.innerHTML = configData.projectStatuses.map(v=>`<option>${v}</option>`).join('');
+    document.getElementById('fp-name').value='';
+    const descEl = document.getElementById('fp-description');
+    if(descEl) descEl.value='';
+  }
+  if(id==='modalTarea') {
+    const list = contextProjectId ? projects.filter(p=>p.id===contextProjectId) : projects;
+    document.getElementById('ft-project').innerHTML = list.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    // populate assignee dropdown
+    document.getElementById('ft-assignee').innerHTML = '<option value="">Sin asignar</option>' + workers.filter(w=>w.status==='Activo').map(w=>`<option value="${w.id}">${w.name} – ${w.role}</option>`).join('');
+    const assigneeGroup   = document.getElementById('ft-assignee-group');
+    const assigneeFixed   = document.getElementById('ft-assignee-fixed-wrap');
+    if(contextWorkerId) {
+      document.getElementById('ft-assignee').value = contextWorkerId;
+      const w = workers.find(x=>x.id===contextWorkerId);
+      document.getElementById('ft-assignee-fixed').textContent = w ? w.name + ' – ' + w.role : '';
+      assigneeGroup.style.display = 'none';
+      assigneeFixed.style.display = 'block';
+    } else {
+      assigneeGroup.style.display = 'block';
+      assigneeFixed.style.display = 'none';
+    }
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('ft-assigned-date').value = today;
+  }
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ══ DETAIL PANEL ══ */
+function closeDetail() { document.getElementById('detailPanel').classList.remove('open'); }
+
+/* ══ TOAST ══ */
+let toastTimer;
+function showToast(msg) {
+  document.getElementById('toastMsg').textContent=msg;
+  document.getElementById('toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>document.getElementById('toast').classList.remove('show'),3000);
+}
+
+/* ══ TICKET DETAIL ══ */
+let currentTicketId = null;
+let commentRole = 'admin';
+
+function setCommentRole(role) {
+  commentRole = role;
+  document.getElementById('tab-admin').className  = 'role-tab' + (role==='admin'  ? ' active-admin'  : '');
+  document.getElementById('tab-worker').className = 'role-tab' + (role==='worker' ? ' active-worker' : '');
+}
+
+function priorityBadgeHtml(p) {
+  const cls = p==='Alta' ? 's-inactive' : p==='Media' ? 's-prospect' : 's-active';
+  return `<span class="status-badge ${cls}" style="display:inline-flex;align-items:center;padding:4px 10px;line-height:1"><span class="status-dot"></span>${p}</span>`;
+}
+
+function renderComments(comments) {
+  const list = document.getElementById('td-comments');
+  if(!comments || !comments.length) {
+    list.innerHTML = '<div style="font-size:.82rem;color:var(--text-main);text-align:center;padding:12px">Sin comentarios aún.</div>';
+    return;
+  }
+  list.innerHTML = comments.map(c => {
+    const initials = c.name.split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase();
+    return `<div class="comment-item">
+      <div class="comment-avatar admin">${initials}</div>
+      <div class="comment-bubble">
+        <div class="comment-meta">
+          <span class="comment-author">${c.name}</span>
+          <span class="comment-date">${c.date}</span>
+        </div>
+        <div class="comment-text">${c.text}</div>
+      </div>
+    </div>`;
+  }).join('');
+  list.scrollTop = list.scrollHeight;
+}
+
+function openTicketDetail(id) {
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  currentTicketId = id;
+
+  // Title
+  document.getElementById('td-modal-title').innerHTML = '<i class="fa-solid fa-ticket" style="color:var(--primary);margin-right:8px"></i>' + t.name;
+
+  // Badges
+  const ticketStatus = t.status || (t.done ? 'Completado' : 'Por asignar');
+  const statusColors = { 'Completado':'var(--success)', 'En curso':'var(--info)', 'En espera':'var(--warning)', 'Por asignar':'#856404' };
+  const sc = statusColors[ticketStatus] || 'var(--text-main)';
+  document.getElementById('td-status-badge').innerHTML = `<span class="status-badge" style="display:inline-flex;align-items:center;padding:4px 10px;line-height:1;background:${sc}22;color:${sc}"><span class="status-dot" style="background:${sc}"></span>${ticketStatus}</span>`;
+  document.getElementById('td-priority-badge').innerHTML = priorityBadgeHtml(t.priority);
+  document.getElementById('td-due').textContent = t.due || '—';
+
+  // Populate edit fields
+  document.getElementById('te-name').value = t.name;
+  document.getElementById('te-description').value = t.description || '';
+  document.getElementById('te-priority').innerHTML = configData.ticketPriorities.map(v=>`<option ${v===t.priority?'selected':''}>${v}</option>`).join('');
+  document.getElementById('te-done').innerHTML = configData.ticketStatuses.map(v=>`<option value="${v}" ${v===ticketStatus?'selected':''}>${v}</option>`).join('');
+  document.getElementById('te-due').value = t.due !== '—' ? (t.due||'') : '';
+  document.getElementById('te-assigned-date').value = t.assignedDate !== '—' ? (t.assignedDate||'') : '';
+  document.getElementById('te-project').innerHTML = projects.map(p=>`<option value="${p.id}" ${p.id===t.projectId?'selected':''}>${p.name}</option>`).join('');
+  document.getElementById('te-assignee').innerHTML = '<option value="">Sin asignar</option>' + workers.map(w=>`<option value="${w.id}" ${w.id===t.assigneeId?'selected':''}>${w.name} (${w.status})</option>`).join('');
+
+  // Comments
+  renderComments(t.comments || []);
+  document.getElementById('td-comment-input').value = '';
+
+  document.getElementById('modalTicketDetail').classList.add('open');
+}
+
+// Open ticket in edit mode (alias - same as detail since form is always editable)
+function openTicketEdit(id) {
+  openTicketDetail(id);
+}
+
+function switchToEditMode() {
+  // No-op: the form is always editable now
+}
+
+function setCommentRole(role) {
+  // No-op: role selection removed, always Ana Carol
+}
+
+function switchToEditMode() {
+  const t = tasks.find(x=>x.id===currentTicketId);
+  document.getElementById('te-name').value        = t.name;
+  document.getElementById('te-description').value = t.description || '';
+  // populate priority dynamically
+  document.getElementById('te-priority').innerHTML = configData.ticketPriorities.map(v=>`<option ${v===t.priority?'selected':''}>${v}</option>`).join('');
+  // populate status dynamically
+  const ticketStatus = t.status || (t.done ? 'Completado' : 'Por asignar');
+  document.getElementById('te-done').innerHTML = configData.ticketStatuses.map(v=>`<option value="${v}" ${v===ticketStatus?'selected':''}>${v}</option>`).join('');
+  document.getElementById('te-due').value         = t.due !== '—' ? t.due : '';
+  document.getElementById('te-assigned-date').value = t.assignedDate !== '—' ? (t.assignedDate||'') : '';
+  document.getElementById('te-project').innerHTML  = projects.map(p=>`<option value="${p.id}" ${p.id===t.projectId?'selected':''}>${p.name}</option>`).join('');
+  document.getElementById('te-assignee').innerHTML = '<option value="">Sin asignar</option>' + workers.filter(w=>w.status==='Activo').map(w=>`<option value="${w.id}" ${w.id===t.assigneeId?'selected':''}>${w.name}</option>`).join('');
+  document.getElementById('td-view-mode').style.display = 'none';
+  document.getElementById('td-edit-mode').style.display = 'block';
+  document.getElementById('td-btn-edit').style.display  = 'none';
+  document.getElementById('td-btn-save').style.display  = 'inline-flex';
+  document.getElementById('td-btn-cancel').textContent  = 'Cancelar';
+  document.getElementById('td-btn-cancel').onclick      = function() { openTicketDetail(currentTicketId); };
+}
+
+function saveTicketEdit() {
+  const t = tasks.find(x=>x.id===currentTicketId);
+  if(!t) return;
+  const name = document.getElementById('te-name').value.trim();
+  if(!name) { showToast('Ingresa el nombre del ticket'); return; }
+  t.name         = name;
+  t.description  = document.getElementById('te-description').value;
+  t.projectId    = parseInt(document.getElementById('te-project').value);
+  t.assigneeId   = parseInt(document.getElementById('te-assignee').value)||null;
+  t.priority     = document.getElementById('te-priority').value;
+  t.status       = document.getElementById('te-done').value;
+  t.done         = t.status === 'Completado';
+  t.due          = document.getElementById('te-due').value || '—';
+  t.assignedDate = document.getElementById('te-assigned-date').value || '—';
+  // update parent project progress
+  const p = projects.find(x=>x.id===t.projectId);
+  if(p) {
+    const pt = tasks.filter(x=>x.projectId===p.id);
+    p.progress = pt.length ? Math.round(pt.filter(x=>x.done).length/pt.length*100) : 0;
+  }
+  // Refresh whichever view is showing
+  if(currentView==='tareas') { renderTaskStats(); renderTasks(); }
+  else if(currentView==='proyecto-detalle') { renderProjectDetailStats(contextProjectId); renderPdTaskList(contextProjectId); }
+  else if(currentView==='tickets') { updateAllTicketCounts(); renderAllTickets(); }
+  showToast('Ticket actualizado');
+  // Update the modal title and badges to reflect the new values
+  document.getElementById('td-modal-title').innerHTML = '<i class="fa-solid fa-ticket" style="color:var(--primary);margin-right:8px"></i>' + t.name;
+  const ticketStatus = t.status || (t.done ? 'Completado' : 'Por asignar');
+  const statusColors = { 'Completado':'var(--success)', 'En curso':'var(--info)', 'En espera':'var(--warning)', 'Por asignar':'#856404' };
+  const sc = statusColors[ticketStatus] || 'var(--text-main)';
+  document.getElementById('td-status-badge').innerHTML = `<span class="status-badge" style="display:inline-flex;align-items:center;padding:4px 10px;line-height:1;background:${sc}22;color:${sc}"><span class="status-dot" style="background:${sc}"></span>${ticketStatus}</span>`;
+  document.getElementById('td-priority-badge').innerHTML = priorityBadgeHtml(t.priority);
+  document.getElementById('td-due').textContent = t.due || '—';
+}
+
+function addComment() {
+  const text = document.getElementById('td-comment-input').value.trim();
+  if(!text) return;
+  const t = tasks.find(x=>x.id===currentTicketId);
+  if(!t.comments) t.comments = [];
+  const today = new Date().toISOString().split('T')[0];
+  t.comments.push({ author:'admin', name:'Ana Carol', text, date:today });
+  document.getElementById('td-comment-input').value = '';
+  renderComments(t.comments);
+  showToast('Comentario agregado');
+}
+
+/* ══ WORKERS ══ */
+function getWorkerName(id) {
+  if(!id) return 'Sin asignar';
+  const w = workers.find(x=>x.id===id);
+  return w ? w.name : 'Sin asignar';
+}
+
+const W_COLORS = ['#4e73df','#1cc88a','#36b9cc','#e74a3b','#6f42c1','#fd7e14'];
+
+let workerFilter = 'todos';
+
+function renderWorkerStats() {
+  const totalEl = document.getElementById('ws-total');
+  if(totalEl) totalEl.textContent = workers.length;
+  configData.workerStatuses.forEach((status, i) => {
+    const el = document.getElementById('ws-status-' + i);
+    if(el) el.textContent = workers.filter(w=>w.status===status).length;
+  });
+}
+
+function filterWorkers(filter) {
+  workerFilter = filter;
+  renderWorkers();
+}
+
+function wtBadge(wt) {
+  if(!wt) return '';
+  const cls = wt==='Por horas' ? 'wt-horas' : 'wt-contrato';
+  const icon = wt==='Por horas' ? 'fa-clock' : 'fa-file-contract';
+  return `<span class="worktype-badge ${cls}" style="margin:0"><i class="fa-solid ${icon}" style="font-size:.6rem"></i>${wt}</span>`;
+}
+
+function renderWorkers() {
+  const grid = document.getElementById('workersGrid');
+  if(!grid) return;
+  const list = workerFilter === 'todos' ? workers : workers.filter(w=>w.status===workerFilter);
+  if(!list.length){ grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="fa-solid fa-user-tie"></i>Sin trabajadores encontrados</div>'; return; }
+  grid.innerHTML = list.map((w,i) => {
+    const globalIdx = workers.indexOf(w);
+    const color    = W_COLORS[globalIdx % W_COLORS.length];
+    const assigned = tasks.filter(t=>t.assigneeId===w.id && !t.done).length;
+    const done     = tasks.filter(t=>t.assigneeId===w.id && t.done).length;
+    return `
+    <div class="card" onclick="openWorkerDetail(${w.id})">
+      <div class="card-stripe" style="background:${color}"></div>
+      <div class="card-body">
+        <div class="client-meta">
+          <div class="c-avatar" style="background:${color}">${w.name.split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase()}</div>
+          <div>
+            <div class="c-name">${w.name}</div>
+            <div class="c-sub"><i class="fa-solid fa-briefcase" style="font-size:.6rem;margin-right:3px"></i>${w.role||'Sin cargo'}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;">
+          <span class="status-badge ${w.status==='Activo'?'s-active':'s-inactive'}" style="margin:0"><span class="status-dot"></span>${w.status}</span>
+          ${wtBadge(w.workType)}
+        </div>
+        <div class="mini-stats">
+          <div class="ms-item"><div class="ms-val">${assigned}</div><div class="ms-lbl">Pendientes</div></div>
+          <div class="ms-item"><div class="ms-val">${done}</div><div class="ms-lbl">Completados</div></div>
+          <div class="ms-item"><div class="ms-val">${assigned+done}</div><div class="ms-lbl">Total</div></div>
+        </div>
+        <div style="font-size:.76rem;color:var(--text-main);font-weight:600"><i class="fa-solid fa-envelope" style="font-size:.68rem;margin-right:4px"></i>${w.email||'Sin email'}</div>
+      </div>
+      <div class="card-footer-bar">
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openWorkerDetail(${w.id})"><i class="fa-solid fa-eye"></i> Ver</button>
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editWorker(${w.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openWorkerTickets(${w.id})"><i class="fa-solid fa-ticket"></i> Tickets</button>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="event.stopPropagation();deleteWorker(${w.id})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openWorkerDetail(id) {
+  const w = workers.find(x=>x.id===id);
+  const i = workers.indexOf(w);
+  const color = W_COLORS[i % W_COLORS.length];
+  const assigned = tasks.filter(t=>t.assigneeId===w.id && !t.done).length;
+  const done = tasks.filter(t=>t.assigneeId===w.id && t.done).length;
+  document.getElementById('dp-avatar').style.background = color;
+  document.getElementById('dp-avatar').textContent = w.name.split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase();
+  document.getElementById('dp-name').textContent = w.name;
+  document.getElementById('dp-sub').textContent = w.role;
+  document.getElementById('dp-body').innerHTML = `
+    <div class="dp-section">Información</div>
+    <div class="dp-row"><span class="dp-lbl">Estado</span><span class="dp-val"><span class="status-badge ${w.status==='Activo'?'s-active':'s-inactive'}" style="margin:0"><span class="status-dot"></span>${w.status}</span></span></div>
+    <div class="dp-row"><span class="dp-lbl">Forma de trabajo</span><span class="dp-val">${wtBadge(w.workType)}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Cargo</span><span class="dp-val">${w.role||'—'}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Email</span><span class="dp-val">${w.email||'—'}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Teléfono</span><span class="dp-val">${w.phone||'—'}</span></div>
+    <div class="dp-section">Tickets</div>
+    <div class="dp-row"><span class="dp-lbl">Pendientes</span><span class="dp-val">${assigned}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Completados</span><span class="dp-val">${done}</span></div>
+    <div class="dp-row"><span class="dp-lbl">Total</span><span class="dp-val">${assigned+done}</span></div>
+    <div style="margin-top:18px;display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="closeDetail();editWorker(${w.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+      <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="closeDetail();openWorkerTickets(${w.id})"><i class="fa-solid fa-ticket"></i> Tickets</button>
+    </div>`;
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function openWorkerTickets(id) {
+  goView('tareas', {workerId: id});
+}
+
+
+function editWorker(id) {
+  const w = workers.find(x=>x.id===id);
+  if(!w) return;
+  // Populate modal fields with current data
+  document.getElementById('fw-name').value     = w.name;
+  document.getElementById('fw-role').value     = w.role     || '';
+  document.getElementById('fw-email').value    = w.email    || '';
+  document.getElementById('fw-phone').value    = w.phone    || '';
+  document.getElementById('fw-status').value   = w.status;
+  document.getElementById('fw-worktype').value = w.workType || 'Por horas';
+  // Change modal title to "Editar"
+  document.querySelector('#modalTrabajador .modal-title').innerHTML =
+    '<i class="fa-solid fa-user-pen" style="color:var(--primary);margin-right:8px"></i>Editar Trabajador';
+  // Change save button to call updateWorker
+  document.getElementById('fw-save-btn').onclick = function() { updateWorker(id); };
+  // Open modal
+  document.getElementById('modalTrabajador').classList.add('open');
+}
+
+function updateWorker(id) {
+  const name = document.getElementById('fw-name').value.trim();
+  if(!name) { showToast('Ingresa el nombre'); return; }
+  const w = workers.find(x=>x.id===id);
+  w.name     = name;
+  w.role     = document.getElementById('fw-role').value     || '';
+  w.email    = document.getElementById('fw-email').value    || '';
+  w.phone    = document.getElementById('fw-phone').value    || '';
+  w.status   = document.getElementById('fw-status').value;
+  w.workType = document.getElementById('fw-worktype').value;
+  renderWorkerStats();
+  renderWorkers();
+  // Reset modal back to "Nuevo" mode
+  document.querySelector('#modalTrabajador .modal-title').innerHTML =
+    '<i class="fa-solid fa-user-tie" style="color:var(--primary);margin-right:8px"></i>Nuevo Trabajador';
+  document.getElementById('fw-save-btn').onclick = saveWorker;
+  document.getElementById('modalTrabajador').classList.remove('open');
+  showToast('Trabajador "' + name + '" actualizado');
+}
+
+function deleteWorker(id) {
+  const w = workers.find(x=>x.id===id);
+  if(!confirm('¿Eliminar a "'+w.name+'"? Los tickets asignados quedarán sin asignar.')) return;
+  tasks.forEach(t=>{ if(t.assigneeId===id) t.assigneeId=null; });
+  workers = workers.filter(x=>x.id!==id);
+  renderWorkerStats(); renderWorkers();
+  showToast('Trabajador eliminado');
+}
+
+function saveWorker() {
+  const name = document.getElementById('fw-name').value.trim();
+  if(!name){ showToast('Ingresa el nombre'); return; }
+  workers.push({ id:Date.now(), name, role:document.getElementById('fw-role').value||'', email:document.getElementById('fw-email').value||'', phone:document.getElementById('fw-phone').value||'', status:document.getElementById('fw-status').value, workType:document.getElementById('fw-worktype').value });
+  renderWorkerStats(); renderWorkers();
+  closeModal('modalTrabajador');
+  showToast('Trabajador "'+name+'" agregado');
+  ['fw-name','fw-role','fw-email','fw-phone'].forEach(id=>document.getElementById(id).value='');
+}
+
+/* ══ WORKER MODAL RESET ══ */
+function resetAndCloseWorkerModal() {
+  closeModal('modalTrabajador');
+  document.querySelector('#modalTrabajador .modal-title').innerHTML =
+    '<i class="fa-solid fa-user-tie" style="color:var(--primary);margin-right:8px"></i>Nuevo Trabajador';
+  document.getElementById('fw-save-btn').onclick = saveWorker;
+  ['fw-name','fw-role','fw-email','fw-phone'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fw-status').value = 'Activo';
+  document.getElementById('fw-worktype').value = 'Por horas';
+}
+
+/* ══ PROJECT DETAIL VIEW ══ */
+let pdCommentRole = 'admin';
+
+function setPdCommentRole(role) {
+  pdCommentRole = role;
+  document.getElementById('pd-tab-admin').className  = 'role-tab' + (role==='admin'  ? ' active-admin'  : '');
+  document.getElementById('pd-tab-worker').className = 'role-tab' + (role==='worker' ? ' active-worker' : '');
+}
+
+function openNewTicketForProject() {
+  // set context and open the task modal
+  document.getElementById('modalTarea').classList.add('open');
+  const list = projects.filter(p => p.id === contextProjectId);
+  document.getElementById('ft-project').innerHTML = list.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('ft-assignee').innerHTML = '<option value="">Sin asignar</option>' + workers.filter(w=>w.status==='Activo').map(w=>`<option value="${w.id}">${w.name} – ${w.role}</option>`).join('');
+  document.getElementById('ft-assignee-group').style.display = 'block';
+  document.getElementById('ft-assignee-fixed-wrap').style.display = 'none';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('ft-assigned-date').value = today;
+  // Override save to refresh project detail
+  document.querySelector('#modalTarea .btn-primary').onclick = function() {
+    saveTaskFromProjectDetail();
+  };
+}
+
+function saveTaskFromProjectDetail() {
+  const name = document.getElementById('ft-name').value.trim();
+  if(!name){ showToast('Ingresa el nombre de la tarea'); return; }
+  const pid = parseInt(document.getElementById('ft-project').value);
+  const wid = parseInt(document.getElementById('ft-assignee').value)||null;
+  tasks.push({ id:Date.now(), projectId:pid, name, description:document.getElementById('ft-description').value||'', assigneeId:wid, priority:document.getElementById('ft-priority').value, due:document.getElementById('ft-due').value||'—', assignedDate:document.getElementById('ft-assigned-date').value||'—', done:false, status:'Pendiente', comments:[] });
+  // update project progress
+  const p = projects.find(x=>x.id===pid);
+  if(p){ const pt=tasks.filter(x=>x.projectId===p.id); p.progress=pt.length?Math.round(pt.filter(x=>x.done).length/pt.length*100):0; }
+  closeModal('modalTarea');
+  showToast(`Ticket "${name}" creado`);
+  document.getElementById('ft-name').value='';
+  document.getElementById('ft-description').value='';
+  renderProjectDetailStats(contextProjectId);
+  renderPdTaskList(contextProjectId);
+}
+
+function renderProjectDetailStats(id) {
+  const container = document.getElementById('pd-stats-row');
+  if(!container) return;
+  const ptasks = tasks.filter(t=>t.projectId===id);
+  const statColors = ['var(--success)','var(--warning)','var(--info)','#6f42c1','var(--primary)','var(--danger)'];
+  const icons = ['fa-circle-check','fa-clock','fa-spinner','fa-pause','fa-list','fa-circle-xmark'];
+
+  let html = `<div class="stat-card" style="border-left-color:var(--primary);cursor:pointer" onclick="filterPdTickets(null)">
+    <div><div class="stat-label" style="color:var(--primary)">Total</div><div class="stat-value">${ptasks.length}</div></div>
+    <i class="fa-solid fa-list-check stat-icon" style="color:var(--primary)"></i>
+  </div>`;
+
+  configData.ticketStatuses.forEach((status, i) => {
+    const color = statColors[i % statColors.length];
+    const icon  = icons[i % icons.length];
+    const count = ptasks.filter(t=>(t.status||(t.done?'Completado':'Por asignar'))===status).length;
+    html += `<div class="stat-card" style="border-left-color:${color};cursor:pointer" onclick="filterPdTickets('${status}')">
+      <div><div class="stat-label" style="color:${color}">${status}</div><div class="stat-value">${count}</div></div>
+      <i class="fa-solid ${icon} stat-icon" style="color:${color}"></i>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function filterPdTickets(filter) {
+  currentPdFilter = filter;
+  const badge = document.getElementById('pd-filter-badge');
+  if(badge) badge.textContent = filter ? `— ${filter}` : '';
+  renderPdTaskList(contextProjectId);
+}
+
+function renderPdTaskList(id) {
+  const ptasks = tasks.filter(t=>t.projectId===id);
+  let list = ptasks;
+  if(currentPdFilter) {
+    list = ptasks.filter(t=>(t.status||(t.done?'Completado':'Por asignar'))===currentPdFilter);
+  }
+  const countBadge = document.getElementById('pd-count-badge');
+  if(countBadge) countBadge.textContent = `${list.length} tickets`;
+  const taskBody = document.getElementById('pd-task-list');
+  if(!list.length) {
+    taskBody.innerHTML = '<div class="empty-state"><i class="fa-solid fa-list-check"></i>Sin tickets encontrados</div>';
+    return;
+  }
+  taskBody.innerHTML = list.map(t=>{
+    const ticketStatus = t.status||(t.done?'Completado':'Por asignar');
+    const sc = getTicketStatusColor(ticketStatus);
+    return `
+    <div class="task-list-row" onclick="openTicketEdit(${t.id})" style="cursor:pointer">
+      <span class="priority-dot ${priorityColor(t.priority)}" title="${t.priority} prioridad"></span>
+      <span class="task-name" style="flex:2">${t.name}</span>
+      <span class="task-assignee">${getWorkerName(t.assigneeId)}</span>
+      <span style="font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;background:${sc}22;color:${sc};white-space:nowrap">${ticketStatus}</span>
+      <span class="task-due"><i class="fa-regular fa-calendar" style="margin-right:3px;font-size:.65rem"></i>${t.due||'—'}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderProjectDetail(id) {
+  const p = projects.find(x=>x.id===id);
+  if(!p) return;
+  const cl = clients.find(c=>c.id===p.clientId);
+  const i = projects.indexOf(p);
+  const color = COLORS[i%COLORS.length];
+  currentPdFilter = null;
+
+  // Recalculate progress
+  const pt = tasks.filter(x=>x.projectId===id);
+  p.progress = pt.length ? Math.round(pt.filter(x=>x.done).length/pt.length*100) : 0;
+
+  // header
+  document.getElementById('pd-title').textContent = p.name;
+  document.getElementById('pd-breadcrumb').innerHTML = `<a onclick="goView('proyectos')">Inicio</a><span class="sep">›</span><a onclick="goView('proyectos')">Proyectos</a><span class="sep">›</span><span>${p.name}</span>`;
+  document.getElementById('pd-back-btn').innerHTML = `<button class="back-btn" onclick="goView('proyectos')"><i class="fa-solid fa-arrow-left"></i> Volver a Proyectos</button>`;
+  document.getElementById('pd-tickets-btn').onclick = function(){ goView('tareas',{projectId:id,clientId:p.clientId}); };
+  document.getElementById('pd-edit-btn').onclick = function(){ editProject(id); };
+
+  // dynamic stats
+  renderProjectDetailStats(id);
+
+  // filter badge reset
+  const badge = document.getElementById('pd-filter-badge');
+  if(badge) badge.textContent = '';
+
+  // side info
+  document.getElementById('pd-icon').style.background = color;
+  document.getElementById('pd-name-side').textContent  = p.name;
+  document.getElementById('pd-client-side').textContent = cl ? cl.name : '—';
+  const statusColor = projStatusColor(p.status);
+  document.getElementById('pd-status-val').innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:999px;background:${statusColor}22;color:${statusColor}"><span style="width:6px;height:6px;border-radius:50%;background:${statusColor};display:inline-block"></span>${p.status}</span>`;
+  document.getElementById('pd-start').textContent  = p.start || '—';
+  document.getElementById('pd-end').textContent    = p.end   || '—';
+  document.getElementById('pd-progress').textContent = p.progress + '%';
+  document.getElementById('pd-description').textContent = p.description || 'Sin descripción.';
+
+  // ticket list
+  renderPdTaskList(id);
+
+  // comments
+  if(!p.comments) p.comments = [];
+  renderProjectComments(p.comments);
+  document.getElementById('pd-comment-input').value='';
+}
+
+function toggleTaskPD(id) {
+  const t = tasks.find(x=>x.id===id);
+  t.done=!t.done;
+  t.status = t.done ? 'Completado' : 'Por asignar';
+  const p = projects.find(x=>x.id===t.projectId);
+  if(p){ const pt=tasks.filter(x=>x.projectId===p.id); p.progress=pt.length?Math.round(pt.filter(x=>x.done).length/pt.length*100):0; }
+  renderProjectDetailStats(contextProjectId);
+  renderPdTaskList(contextProjectId);
+}
+
+function renderProjectComments(comments) {
+  const list = document.getElementById('pd-comment-list');
+  if(!comments || !comments.length) {
+    list.innerHTML='<div style="font-size:.82rem;color:var(--text-main);text-align:center;padding:12px">Sin comentarios aún.</div>';
+    return;
+  }
+  list.innerHTML = comments.map(c=>{
+    const initials = c.name.split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase();
+    return `<div class="comment-item">
+      <div class="comment-avatar admin">${initials}</div>
+      <div class="comment-bubble">
+        <div class="comment-meta">
+          <span class="comment-author">${c.name}</span>
+          <span class="comment-date">${c.date}</span>
+        </div>
+        <div class="comment-text">${c.text}</div>
+      </div>
+    </div>`;
+  }).join('');
+  list.scrollTop = list.scrollHeight;
+}
+
+function addProjectComment() {
+  const text = document.getElementById('pd-comment-input').value.trim();
+  if(!text) return;
+  const p = projects.find(x=>x.id===contextProjectId);
+  if(!p) return;
+  if(!p.comments) p.comments=[];
+  const today = new Date().toISOString().split('T')[0];
+  p.comments.push({ author:'admin', name:'Ana Carol', text, date:today });
+  document.getElementById('pd-comment-input').value='';
+  renderProjectComments(p.comments);
+  showToast('Comentario agregado');
+}
+
+/* ══ CONFIG PAGE ══ */
+let configData = {
+  workTypes:        ['Por horas','Por contrato'],
+  projectStatuses:  ['En curso','Completado','Pausado','Futuro'],
+  clientStatuses:   ['Activo','Inactivo','Prospecto'],
+  ticketStatuses:   ['Completado','Por asignar','En curso','En espera'],
+  ticketPriorities: ['Alta','Media','Baja'],
+  roleTypes:        ['Técnico','Supervisor'],
+  workerStatuses:   ['Activo','Inactivo'],
+};
+
+const configListIds = {
+  workTypes:        'forma-work-list',
+  ticketStatuses:   'ticket-status-list',
+  ticketPriorities: 'ticket-priority-list',
+  roleTypes:        'role-types-list',
+  workerStatuses:   'worker-status-list',
+  projectStatuses:  'project-status-list',
+  clientStatuses:   'client-status-list',
+};
+
+const configColors = {
+  workTypes:        'var(--primary)',
+  ticketStatuses:   'var(--info)',
+  ticketPriorities: 'var(--danger)',
+  roleTypes:        'var(--success)',
+  workerStatuses:   'var(--warning)',
+  projectStatuses:  '#6f42c1',
+  clientStatuses:   '#20c997',
+};
+
+function renderConfigPage() {
+  Object.keys(configData).forEach(key => renderConfigList(key));
+  syncConfigDropdowns();
+}
+
+function renderConfigList(key) {
+  const listId = configListIds[key];
+  const color  = configColors[key];
+  const el = document.getElementById(listId);
+  if(!el) return;
+  if(!configData[key].length) {
+    el.innerHTML='<div class="empty-state" style="padding:20px 0"><i class="fa-solid fa-list"></i>Sin elementos</div>';
+    return;
+  }
+  el.innerHTML = configData[key].map((item, idx)=>`
+    <div class="task-list-row" style="padding:10px 20px">
+      <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span>
+      <span style="flex:1;font-size:.88rem;font-weight:700;color:var(--text-dark)">${item}</span>
+      <button onclick="deleteConfigItem('${key}',${idx})" style="background:none;border:none;cursor:pointer;color:#b7b9cc;font-size:.82rem;padding:2px 6px;" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>
+    </div>`).join('');
+}
+
+function addConfigItem(key, listId, value) {
+  value = (value||'').trim();
+  if(!value){ showToast('Ingresa un valor'); return; }
+  if(configData[key].includes(value)){ showToast('Ya existe ese valor'); return; }
+  configData[key].push(value);
+  renderConfigList(key);
+  syncConfigDropdowns();
+  const inputMap = { workTypes:'new-worktype', ticketStatuses:'new-ticket-status', ticketPriorities:'new-ticket-priority', roleTypes:'new-role-type', workerStatuses:'new-worker-status', projectStatuses:'new-project-status', clientStatuses:'new-client-status' };
+  const inp = document.getElementById(inputMap[key]);
+  if(inp) inp.value='';
+  showToast(`"${value}" agregado`);
+}
+
+function deleteConfigItem(key, idx) {
+  const val = configData[key][idx];
+  if(!confirm(`¿Eliminar "${val}"?`)) return;
+  configData[key].splice(idx,1);
+  renderConfigList(key);
+  syncConfigDropdowns();
+  showToast(`"${val}" eliminado`);
+}
+
+function syncConfigDropdowns() {
+  // Forma de trabajo
+  const fwWorktype = document.getElementById('fw-worktype');
+  if(fwWorktype) fwWorktype.innerHTML = configData.workTypes.map(v=>`<option>${v}</option>`).join('');
+  // Estado trabajador
+  const fwStatus = document.getElementById('fw-status');
+  if(fwStatus) fwStatus.innerHTML = configData.workerStatuses.map(v=>`<option>${v}</option>`).join('');
+  // Estado proyecto modal
+  const fpStatus = document.getElementById('fp-status');
+  if(fpStatus) fpStatus.innerHTML = configData.projectStatuses.map(v=>`<option>${v}</option>`).join('');
+  // Estado cliente modal
+  const fcStatus = document.getElementById('fc-status');
+  if(fcStatus) fcStatus.innerHTML = configData.clientStatuses.map(v=>`<option>${v}</option>`).join('');
+  // Ticket status dropdowns
+  ['ft-status','te-done'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = configData.ticketStatuses.map(v=>`<option value="${v}">${v}</option>`).join('');
+  });
+  // Ticket priority dropdowns
+  ['ft-priority','te-priority'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = configData.ticketPriorities.map(v=>`<option>${v}</option>`).join('');
+  });
+  // Re-render dynamic stats cards
+  renderWorkerStatsCards();
+  renderProjectStatsCards();
+  renderClientStatsCards();
+}
+
+function renderWorkerStatsCards() {
+  const container = document.getElementById('ws-dynamic-stats');
+  if(!container) return;
+  const statColors = ['var(--success)','var(--danger)','var(--info)','var(--warning)','#6f42c1','var(--primary)'];
+  const icons = ['fa-circle-check','fa-circle-xmark','fa-user-clock','fa-pause','fa-user','fa-star'];
+  let html = `<div class="stat-card" style="border-left-color:var(--primary)" onclick="filterWorkers('todos')">
+    <div><div class="stat-label" style="color:var(--primary)">Total</div><div class="stat-value" id="ws-total">0</div></div>
+    <i class="fa-solid fa-users stat-icon" style="color:var(--primary)"></i>
+  </div>`;
+  configData.workerStatuses.forEach((status, i) => {
+    const color = statColors[i % statColors.length];
+    const icon  = icons[i % icons.length];
+    const safeId = 'ws-status-' + i;
+    html += `<div class="stat-card" style="border-left-color:${color}" onclick="filterWorkers('${status}')">
+      <div><div class="stat-label" style="color:${color}">${status}</div><div class="stat-value" id="${safeId}">0</div></div>
+      <i class="fa-solid ${icon} stat-icon" style="color:${color}"></i>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderProjectStatsCards() {
+  const container = document.getElementById('ps-dynamic-stats');
+  if(!container) return;
+  const statColors = ['var(--success)','var(--primary)','var(--warning)','var(--info)','var(--danger)','#6f42c1'];
+  const icons = ['fa-spinner','fa-circle-check','fa-pause','fa-calendar','fa-times','fa-star'];
+  let html = `<div class="stat-card" style="border-left-color:var(--primary);cursor:pointer" onclick="filterProjects('todos')">
+    <div><div class="stat-label" style="color:var(--primary)">Total</div><div class="stat-value" id="ps-total">0</div></div>
+    <i class="fa-solid fa-diagram-project stat-icon" style="color:var(--primary)"></i>
+  </div>`;
+  configData.projectStatuses.forEach((status, i) => {
+    const color = statColors[i % statColors.length];
+    const icon  = icons[i % icons.length];
+    const safeId = 'ps-status-' + i;
+    html += `<div class="stat-card" style="border-left-color:${color};cursor:pointer" onclick="filterProjects('${status}')">
+      <div><div class="stat-label" style="color:${color}">${status}</div><div class="stat-value" id="${safeId}">0</div></div>
+      <i class="fa-solid ${icon} stat-icon" style="color:${color}"></i>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderClientStatsCards() {
+  const container = document.getElementById('st-dynamic-stats');
+  if(!container) return;
+  const statColors = ['var(--success)','var(--danger)','var(--info)','var(--warning)','#6f42c1','var(--primary)'];
+  const icons = ['fa-circle-check','fa-circle-xmark','fa-star','fa-pause','fa-user','fa-users'];
+  let html = `<div class="stat-card" style="border-left-color:var(--primary)" onclick="filterClients('todos')">
+    <div><div class="stat-label" style="color:var(--primary)">Total</div><div class="stat-value" id="st-total">0</div></div>
+    <i class="fa-solid fa-users stat-icon" style="color:var(--primary)"></i>
+  </div>`;
+  configData.clientStatuses.forEach((status, i) => {
+    const color = statColors[i % statColors.length];
+    const icon  = icons[i % icons.length];
+    const safeId = 'st-status-' + i;
+    html += `<div class="stat-card" style="border-left-color:${color}" onclick="filterClients('${status}')">
+      <div><div class="stat-label" style="color:${color}">${status}</div><div class="stat-value" id="${safeId}">0</div></div>
+      <i class="fa-solid ${icon} stat-icon" style="color:${color}"></i>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+/* ══ ALL TICKETS VIEW ══ */
+let currentTicketStatusFilter = null;
+
+function renderAllTicketStats() {
+  const container = document.getElementById('tkt-dynamic-stats');
+  if(!container) return;
+  const statColors = ['var(--success)','var(--warning)','var(--info)','#6f42c1','var(--danger)','var(--primary)'];
+  const icons = ['fa-circle-check','fa-clock','fa-spinner','fa-pause','fa-circle-xmark','fa-list'];
+  let html = `<div class="stat-card" style="border-left-color:var(--primary);cursor:pointer" onclick="filterTicketsByStatus(null)">
+    <div><div class="stat-label" style="color:var(--primary)">Total</div><div class="stat-value" id="tkt-total">0</div></div>
+    <i class="fa-solid fa-list-check stat-icon" style="color:var(--primary)"></i>
+  </div>`;
+  configData.ticketStatuses.forEach((status, i) => {
+    const color = statColors[i % statColors.length];
+    const icon  = icons[i % icons.length];
+    const safeId = 'tkt-status-' + i;
+    html += `<div class="stat-card" style="border-left-color:${color};cursor:pointer" onclick="filterTicketsByStatus('${status}')">
+      <div><div class="stat-label" style="color:${color}">${status}</div><div class="stat-value" id="${safeId}">0</div></div>
+      <i class="fa-solid ${icon} stat-icon" style="color:${color}"></i>
+    </div>`;
+  });
+  container.innerHTML = html;
+  updateAllTicketCounts();
+}
+
+function updateAllTicketCounts() {
+  const totalEl = document.getElementById('tkt-total');
+  if(totalEl) totalEl.textContent = tasks.length;
+  configData.ticketStatuses.forEach((status, i) => {
+    const el = document.getElementById('tkt-status-' + i);
+    if(el) el.textContent = tasks.filter(t => (t.status||(t.done?'Completado':'Por asignar')) === status).length;
+  });
+}
+
+function filterTicketsByStatus(status) {
+  currentTicketStatusFilter = status;
+  const badge = document.getElementById('tkt-filter-badge');
+  if(badge) badge.textContent = status ? `— filtrando: ${status}` : '';
+  renderAllTickets();
+}
+
+function populateTicketProjectFilter() {
+  const sel = document.getElementById('ticketProjectFilter');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Todos los proyectos</option>' + projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+}
+
+function populateTicketWorkerFilter() {
+  const sel = document.getElementById('ticketWorkerFilter');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Todos los trabajadores</option><option value="none">Sin asignar</option>' +
+    workers.filter(w=>w.status==='Activo').map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
+}
+
+function getTicketStatusColor(status) {
+  const map = { 'Completado':'var(--success)', 'En curso':'var(--info)', 'En espera':'var(--warning)', 'Por asignar':'#856404' };
+  return map[status] || 'var(--text-main)';
+}
+
+function renderAllTickets() {
+  const q = (document.getElementById('ticketSearch')||{}).value?.toLowerCase()||'';
+  const pid = parseInt((document.getElementById('ticketProjectFilter')||{}).value)||null;
+  const wval = (document.getElementById('ticketWorkerFilter')||{}).value||'';
+  let list = tasks.filter(t => {
+    const status = t.status||(t.done?'Completado':'Por asignar');
+    const matchS = !currentTicketStatusFilter || status === currentTicketStatusFilter;
+    const matchP = !pid || t.projectId === pid;
+    const matchW = !wval || (wval==='none' ? !t.assigneeId : String(t.assigneeId)===wval);
+    const matchQ = !q || t.name.toLowerCase().includes(q) || (t.description||'').toLowerCase().includes(q);
+    return matchS && matchP && matchW && matchQ;
+  });
+  document.getElementById('tkt-count-badge').textContent = list.length + ' tickets';
+  const body = document.getElementById('allTicketsBody');
+  if(!list.length) { body.innerHTML='<div class="empty-state"><i class="fa-solid fa-list-check"></i>Sin tickets encontrados</div>'; return; }
+  body.innerHTML = list.map(t => {
+    const proj = projects.find(p=>p.id===t.projectId);
+    const ticketStatus = t.status||(t.done?'Completado':'Por asignar');
+    const sc = getTicketStatusColor(ticketStatus);
+    const pc = projStatusColor(proj?.status||'');
+    return `
+    <div class="task-list-row" onclick="openTicketFromAllView(${t.id})" style="cursor:pointer">
+      <span class="priority-dot ${priorityColor(t.priority)}" title="${t.priority} prioridad"></span>
+      <span class="task-name" style="flex:2">${t.name}</span>
+      <span class="task-assignee" style="background:${pc}22;color:${pc};border-color:${pc}44">${proj?proj.name:'—'}</span>
+      <span class="task-assignee">${getWorkerName(t.assigneeId)}</span>
+      <span style="font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;background:${sc}22;color:${sc};white-space:nowrap">${ticketStatus}</span>
+      <span class="task-due"><i class="fa-regular fa-calendar" style="margin-right:3px;font-size:.65rem"></i>${t.due||'—'}</span>
+      <span style="margin-left:auto;display:flex;gap:4px">
+        <button onclick="event.stopPropagation();deleteTaskAllView(${t.id})" style="background:none;border:none;cursor:pointer;color:#b7b9cc;font-size:.8rem;padding:2px 4px;" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+function openTicketFromAllView(id) {
+  openTicketEdit(id);
+}
+
+function deleteTaskAllView(id) {
+  if(!confirm('¿Eliminar este ticket?')) return;
+  const t = tasks.find(x=>x.id===id);
+  const pid = t ? t.projectId : null;
+  tasks=tasks.filter(x=>x.id!==id);
+  if(pid){ const p=projects.find(x=>x.id===pid); if(p){ const pt=tasks.filter(x=>x.projectId===pid); p.progress=pt.length?Math.round(pt.filter(x=>x.done).length/pt.length*100):0; } }
+  updateAllTicketCounts();
+  renderAllTickets();
+  showToast('Ticket eliminado');
+}
+
+function openAllTicketsModal() {
+  contextProjectId = null;
+  openModal('modalTarea');
+  document.querySelector('#modalTarea .btn-primary').onclick = function() { saveTaskAllView(); };
+}
+
+function saveTaskAllView() {
+  const name = document.getElementById('ft-name').value.trim();
+  if(!name){ showToast('Ingresa el nombre de la tarea'); return; }
+  const pid = parseInt(document.getElementById('ft-project').value);
+  const wid = parseInt(document.getElementById('ft-assignee').value)||null;
+  const status = document.getElementById('ft-status').value||'Por asignar';
+  tasks.push({ id:Date.now(), projectId:pid, name, description:document.getElementById('ft-description').value||'', assigneeId:wid, priority:document.getElementById('ft-priority').value, status, due:document.getElementById('ft-due').value||'—', assignedDate:document.getElementById('ft-assigned-date').value||'—', done:status==='Completado', comments:[] });
+  const p = projects.find(x=>x.id===pid);
+  if(p){ const pt=tasks.filter(x=>x.projectId===pid); p.progress=pt.length?Math.round(pt.filter(x=>x.done).length/pt.length*100):0; }
+  closeModal('modalTarea');
+  showToast(`Ticket "${name}" creado`);
+  document.getElementById('ft-name').value=''; document.getElementById('ft-description').value='';
+  updateAllTicketCounts(); renderAllTickets();
+  populateTicketWorkerFilter();
+}
+
+/* ══ CALENDARIO ══ */
+let calYear, calMonth;
+
+function calGoToday() {
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth();
+  renderCalendar();
+}
+
+function calNav(dir) {
+  calMonth += dir;
+  if(calMonth > 11){ calMonth=0; calYear++; }
+  if(calMonth < 0){ calMonth=11; calYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  if(calYear===undefined){ const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); }
+  const today = new Date();
+  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  document.getElementById('cal-month-label').textContent = `${monthNames[calMonth]} ${calYear}`;
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  // Build project color map
+  const projColors = {};
+  projects.forEach((p,i) => { projColors[p.id] = COLORS[i%COLORS.length]; });
+
+  let html = dayNames.map(d=>`<div class="cal-day-header">${d}</div>`).join('');
+
+  // Prev month padding
+  for(let i=firstDay-1; i>=0; i--) {
+    const d = daysInPrev - i;
+    html += `<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+
+  for(let d=1; d<=daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+    const dayTasks = tasks.filter(t=>t.due===dateStr);
+    const ticketsHtml = dayTasks.map(t=>{
+      const color = projColors[t.projectId]||'var(--primary)';
+      return `<div class="cal-ticket" style="background:${color}22;color:${color};border-left:3px solid ${color}" onclick="openTicketEdit(${t.id})" title="${t.name}">${t.name}</div>`;
+    }).join('');
+    html += `<div class="cal-day">
+      <div class="cal-day-num ${isToday?'today':''}">${d}</div>
+      ${ticketsHtml}
+    </div>`;
+  }
+
+  // Next month padding to fill grid
+  const totalCells = firstDay + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for(let d=1; d<=remaining; d++) {
+    html += `<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+
+  // Legend
+  const legend = document.getElementById('cal-legend');
+  legend.innerHTML = projects.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;font-size:.76rem;font-weight:700;color:var(--text-dark)">
+      <span style="width:10px;height:10px;border-radius:3px;background:${COLORS[i%COLORS.length]};display:inline-block"></span>
+      ${p.name}
+    </div>`).join('');
+}
+
+/* ══ COLLAPSE ══ */
+function toggleCollapse(el) {
+  const li = el.closest('.nav-item');
+  const collapse = li ? li.querySelector('.nav-collapse') : null;
+  if(!collapse) return;
+  collapse.classList.toggle('open');
+  const arrow = el.querySelector('.collapse-arrow');
+  if(arrow) arrow.style.transform = collapse.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+/* ══ INIT ══ */
+syncConfigDropdowns(); // builds dynamic stat cards first
+renderClientStats();
+renderClients();
+renderDashboard();
+goView('proyectos');
+</script>
+</body>
+</html>

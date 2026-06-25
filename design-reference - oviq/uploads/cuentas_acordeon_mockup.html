@@ -1,0 +1,214 @@
+
+<style>
+  .acct-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); margin-bottom: 10px; overflow: hidden; }
+  .acct-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .acct-header:hover { background: var(--color-background-secondary); }
+  .acct-left { display: flex; align-items: center; gap: 10px; }
+  .acct-icon { width: 32px; height: 32px; border-radius: var(--border-radius-md); background: #EEEDFE; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .acct-icon svg { width: 16px; height: 16px; }
+  .acct-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .acct-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .acct-right { display: flex; align-items: center; gap: 10px; }
+  .badge { font-size: 11px; padding: 3px 8px; border-radius: 99px; font-weight: 500; }
+  .badge-warn { background: #FAEEDA; color: #633806; }
+  .badge-ok { background: #EAF3DE; color: #27500A; }
+  .badge-gray { background: #F1EFE8; color: #444441; }
+  .chevron { width: 16px; height: 16px; color: var(--color-text-tertiary); transition: transform 0.2s; flex-shrink: 0; }
+  .chevron.open { transform: rotate(90deg); }
+  .acct-body { border-top: 0.5px solid var(--color-border-tertiary); }
+  .sub-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 10px 52px; border-bottom: 0.5px solid var(--color-border-tertiary); cursor: pointer; }
+  .sub-row:last-child { border-bottom: none; }
+  .sub-row:hover { background: var(--color-background-secondary); }
+  .sub-left { display: flex; align-items: center; gap: 8px; }
+  .sub-dot { width: 6px; height: 6px; border-radius: 50%; background: #7F77DD; flex-shrink: 0; }
+  .sub-name { font-size: 13px; color: var(--color-text-primary); }
+  .sub-count { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; }
+  .sub-right { display: flex; align-items: center; gap: 8px; }
+  .no-sub-row { padding: 10px 16px 10px 52px; font-size: 13px; color: var(--color-text-tertiary); font-style: italic; }
+  .direct-proj-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 10px 52px; border-bottom: 0.5px solid var(--color-border-tertiary); cursor: pointer; }
+  .direct-proj-row:last-child { border-bottom: none; }
+  .direct-proj-row:hover { background: var(--color-background-secondary); }
+  .proj-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; flex-shrink: 0; }
+  .section-label { font-size: 11px; color: var(--color-text-tertiary); padding: 8px 16px 4px 52px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .top-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+  .btn-new { font-size: 13px; padding: 7px 14px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-primary); }
+  .btn-new:hover { background: var(--color-background-secondary); }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+  .stat-label { font-size: 12px; color: var(--color-text-secondary); }
+  .stat-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin-top: 2px; }
+</style>
+
+<h2 class="sr-only">Pantalla de cuentas con subcuentas en formato acordeón</h2>
+
+<div style="padding: 1rem 0;">
+
+  <div class="top-bar">
+    <span class="top-title">Cuentas</span>
+    <button class="btn-new">+ Nueva cuenta</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Cuentas</div>
+      <div class="stat-val">3</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Subcuentas</div>
+      <div class="stat-val">4</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Proyectos activos</div>
+      <div class="stat-val">7</div>
+    </div>
+  </div>
+
+  <div id="accounts-list">
+
+    <div class="acct-card">
+      <div class="acct-header" onclick="toggle('a1')">
+        <div class="acct-left">
+          <div class="acct-icon">
+            <svg viewBox="0 0 16 16" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round">
+              <rect x="2" y="4" width="12" height="9" rx="1.5"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1"/>
+            </svg>
+          </div>
+          <div>
+            <div class="acct-name">Pedregal</div>
+            <div class="acct-meta">2 subcuentas · 4 proyectos</div>
+          </div>
+        </div>
+        <div class="acct-right">
+          <span class="badge badge-warn">2 facturas pendientes</span>
+          <svg class="chevron open" id="chev-a1" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+      <div class="acct-body" id="body-a1">
+        <div class="section-label">Subcuentas</div>
+        <div class="sub-row" onclick="sendPrompt('Muéstrame el mockup del detalle de la subcuenta Quebradores')">
+          <div class="sub-left">
+            <div class="sub-dot"></div>
+            <div>
+              <div class="sub-name">Quebradores</div>
+              <div class="sub-count">2 proyectos</div>
+            </div>
+          </div>
+          <div class="sub-right">
+            <span class="badge badge-warn">1 pendiente</span>
+            <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="sub-row" onclick="sendPrompt('Muéstrame el mockup del detalle de la subcuenta Norte')">
+          <div class="sub-left">
+            <div class="sub-dot"></div>
+            <div>
+              <div class="sub-name">Norte</div>
+              <div class="sub-count">2 proyectos</div>
+            </div>
+          </div>
+          <div class="sub-right">
+            <span class="badge badge-warn">1 pendiente</span>
+            <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acct-card">
+      <div class="acct-header" onclick="toggle('a2')">
+        <div class="acct-left">
+          <div class="acct-icon">
+            <svg viewBox="0 0 16 16" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round">
+              <rect x="2" y="4" width="12" height="9" rx="1.5"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1"/>
+            </svg>
+          </div>
+          <div>
+            <div class="acct-name">Constructora Valle</div>
+            <div class="acct-meta">2 subcuentas · 2 proyectos</div>
+          </div>
+        </div>
+        <div class="acct-right">
+          <span class="badge badge-ok">Al día</span>
+          <svg class="chevron" id="chev-a2" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+      <div class="acct-body" id="body-a2" style="display:none">
+        <div class="section-label">Subcuentas</div>
+        <div class="sub-row">
+          <div class="sub-left">
+            <div class="sub-dot"></div>
+            <div>
+              <div class="sub-name">Residencial Sur</div>
+              <div class="sub-count">1 proyecto</div>
+            </div>
+          </div>
+          <div class="sub-right">
+            <span class="badge badge-ok">Al día</span>
+            <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="sub-row">
+          <div class="sub-left">
+            <div class="sub-dot"></div>
+            <div>
+              <div class="sub-name">Comercial Este</div>
+              <div class="sub-count">1 proyecto</div>
+            </div>
+          </div>
+          <div class="sub-right">
+            <span class="badge badge-ok">Al día</span>
+            <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acct-card">
+      <div class="acct-header" onclick="toggle('a3')">
+        <div class="acct-left">
+          <div class="acct-icon">
+            <svg viewBox="0 0 16 16" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round">
+              <rect x="2" y="4" width="12" height="9" rx="1.5"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1"/>
+            </svg>
+          </div>
+          <div>
+            <div class="acct-name">Infraestructura Nacional</div>
+            <div class="acct-meta">Sin subcuentas · 1 proyecto directo</div>
+          </div>
+        </div>
+        <div class="acct-right">
+          <span class="badge badge-gray">Sin subcuentas</span>
+          <svg class="chevron" id="chev-a3" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+      <div class="acct-body" id="body-a3" style="display:none">
+        <div class="section-label">Proyectos directos</div>
+        <div class="direct-proj-row">
+          <div class="sub-left">
+            <div class="proj-dot"></div>
+            <div>
+              <div class="sub-name">Autopista Central Tramo 3</div>
+              <div class="sub-count">Factura directo a la cuenta</div>
+            </div>
+          </div>
+          <div class="sub-right">
+            <span class="badge badge-ok">Al día</span>
+            <svg style="width:14px;height:14px;color:var(--color-text-tertiary)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggle(id) {
+  const body = document.getElementById('body-' + id);
+  const chev = document.getElementById('chev-' + id);
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  chev.classList.toggle('open', !open);
+}
+</script>

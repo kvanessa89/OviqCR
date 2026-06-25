@@ -1,0 +1,22 @@
+# Root .gitignore para el monorepo Oviq
+# El backend tiene su propio .gitignore (.NET) en backend/.gitignore
+# El frontend tiene su propio .gitignore (Vite) en frontend/.gitignore
+
+# Frontend / Node
+node_modules/
+frontend/dist/
+
+# Variables de entorno
+.env
+.env.local
+*.local
+
+# Secretos de configuración del backend (contienen credenciales)
+appsettings.Development.json
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vs/
+.vscode/
+.idea/

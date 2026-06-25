@@ -1,0 +1,322 @@
+
+<style>
+  *{box-sizing:border-box}
+  .page{padding:1rem 0}
+  .page-title{font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+  .page-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:24px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+  .kpi{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;cursor:pointer;transition:border-color .15s}
+  .kpi:hover{border-color:var(--color-border-primary)}
+  .kpi.warn{border-left:3px solid #BA7517}
+  .kpi.danger{border-left:3px solid #C0392B}
+  .kpi.ok{border-left:3px solid #1D9E75}
+  .kpi.neutral{border-left:3px solid #7F77DD}
+  .kpi-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
+  .kpi-val{font-size:28px;font-weight:500;color:var(--color-text-primary);line-height:1}
+  .kpi-sub{font-size:12px;color:var(--color-text-tertiary);margin-top:4px}
+  .kpi-val.danger{color:#C0392B}
+  .kpi-val.warn{color:#BA7517}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .full-col{margin-bottom:12px}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .section-title{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+  .ver-todo{font-size:12px;color:var(--color-text-tertiary);cursor:pointer}
+  .ver-todo:hover{color:var(--color-text-secondary)}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+  .list-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer}
+  .list-row:last-child{border-bottom:none}
+  .list-row:hover{background:var(--color-background-secondary)}
+  .row-left{display:flex;align-items:center;gap:8px}
+  .row-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .dot-danger{background:#C0392B}
+  .dot-warn{background:#BA7517}
+  .dot-ok{background:#1D9E75}
+  .dot-purple{background:#7F77DD}
+  .row-name{font-size:13px;color:var(--color-text-primary)}
+  .row-meta{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
+  .row-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .badge{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:500}
+  .badge-danger{background:#FDECEA;color:#7B1C14}
+  .badge-warn{background:#FAEEDA;color:#633806}
+  .badge-ok{background:#EAF3DE;color:#27500A}
+  .badge-gray{background:#F1EFE8;color:#444441}
+  .badge-purple{background:#EEEDFE;color:#2D2785}
+  .amt{font-size:13px;font-weight:500;color:var(--color-text-primary);font-variant-numeric:tabular-nums}
+  .chev{width:13px;height:13px;color:var(--color-text-tertiary)}
+  .empty{padding:20px 14px;font-size:13px;color:var(--color-text-tertiary);text-align:center}
+  .cobro-bar-bg{height:6px;background:var(--color-background-secondary);border-radius:99px;overflow:hidden;margin-top:8px}
+  .cobro-bar-fill{height:100%;border-radius:99px;background:#1D9E75}
+  .cobro-row{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-top:5px}
+  .mes-card{padding:14px 16px}
+  .mes-title{font-size:12px;color:var(--color-text-secondary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+  .mes-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .mes-item{text-align:center}
+  .mes-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+  .mes-label{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+  .tab-bar{display:flex;gap:4px;margin-bottom:12px}
+  .tab{font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-secondary)}
+  .tab.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+</style>
+
+<h2 class="sr-only">Vista general del sistema de construcción con métricas de facturas, proyectos y tickets</h2>
+
+<div class="page">
+
+  <div class="page-title">Vista general</div>
+  <div class="page-sub">Lunes, 12 de mayo 2025</div>
+
+  <div class="kpi-grid">
+    <div class="kpi danger" onclick="scrollTo(0,300)">
+      <div class="kpi-label">Facturas vencidas</div>
+      <div class="kpi-val danger">4</div>
+      <div class="kpi-sub">Requieren atención</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-label">Pendientes de cobrar</div>
+      <div class="kpi-val warn">9</div>
+      <div class="kpi-sub">₡3.2M por cobrar</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-label">Pendientes de facturar</div>
+      <div class="kpi-val warn">3</div>
+      <div class="kpi-sub">Proyectos completados</div>
+    </div>
+    <div class="kpi neutral">
+      <div class="kpi-label">Proyectos activos</div>
+      <div class="kpi-val">12</div>
+      <div class="kpi-sub">2 atrasados</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+
+    <div>
+      <div class="section-header">
+        <span class="section-title">Facturas vencidas</span>
+        <span class="ver-todo">Ver todas →</span>
+      </div>
+      <div class="card">
+        <div class="list-row">
+          <div class="row-left">
+            <div class="row-dot dot-danger"></div>
+            <div>
+              <div class="row-name">Food Court #1</div>
+              <div class="row-meta">#F-0041 · venció hace 12 días</div>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="amt">₡450,000</span>
+            <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="row-left">
+            <div class="row-dot dot-danger"></div>
+            <div>
+              <div class="row-name">Quebradores</div>
+              <div class="row-meta">#F-0038 · venció hace 8 días</div>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="amt">₡820,000</span>
+            <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="row-left">
+            <div class="row-dot dot-danger"></div>
+            <div>
+              <div class="row-name">BALI</div>
+              <div class="row-meta">#F-0035 · venció hace 3 días</div>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="amt">₡290,000</span>
+            <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="row-left">
+            <div class="row-dot dot-danger"></div>
+            <div>
+              <div class="row-name">IZF</div>
+              <div class="row-meta">#F-0033 · venció ayer</div>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="amt">₡640,000</span>
+            <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header">
+        <span class="section-title">Proyectos pendientes de facturar</span>
+        <span class="ver-todo">Ver todos →</span>
+      </div>
+      <div class="card">
+        <div class="list-row">
+          <div class="row-left">
+            <div class="row-dot dot-warn"></div>
+            <div>
+              <div class="row-name">Relleno compactación Norte</div>
+              <div class="row-meta">Subcuenta Norte · completado hace 5 días</div>
+            </div>
+          </div>
+          <div class="row-right">
+            <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="row-left">
+            <div class="row-dot dot-warn"></div>
+            <div>
+              <div class="row-name">Instalación eléctrica BALI</div>
+              <div class="row-meta">Subcuenta BALI · completado hace 2 días</div>
+            </div>
+          </div>
+          <div class="row-right">
+            <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="row-left">
+            <div class="row-dot dot-warn"></div>
+            <div>
+              <div class="row-name">Acabados Mercadito Gourmet</div>
+              <div class="row-meta">Subcuenta Mercadito Gourmet · completado hoy</div>
+            </div>
+          </div>
+          <div class="row-right">
+            <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="section-header">
+          <span class="section-title">Resumen del mes</span>
+        </div>
+        <div class="card">
+          <div class="mes-card">
+            <div class="mes-title">Mayo 2025</div>
+            <div class="mes-nums">
+              <div class="mes-item">
+                <div class="mes-val">₡4.1M</div>
+                <div class="mes-label">Facturado</div>
+              </div>
+              <div class="mes-item">
+                <div class="mes-val">₡2.9M</div>
+                <div class="mes-label">Cobrado</div>
+              </div>
+              <div class="mes-item">
+                <div class="mes-val" style="color:#BA7517">₡1.2M</div>
+                <div class="mes-label">Por cobrar</div>
+              </div>
+            </div>
+            <div class="cobro-bar-bg">
+              <div class="cobro-bar-fill" style="width:71%"></div>
+            </div>
+            <div class="cobro-row">
+              <span>71% cobrado</span>
+              <span>29% pendiente</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="full-col">
+    <div class="section-header">
+      <span class="section-title">Proyectos y tickets atrasados</span>
+      <span class="ver-todo">Ver todos →</span>
+    </div>
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab(this,'proyectos')">Proyectos</div>
+      <div class="tab" onclick="switchTab(this,'tickets')">Tickets</div>
+    </div>
+    <div class="card" id="tab-proyectos">
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-dot dot-danger"></div>
+          <div>
+            <div class="row-name">Excavación Zona Norte — Fase 1</div>
+            <div class="row-meta">Subcuenta Norte · venció 30 abr · 12 días de atraso</div>
+          </div>
+        </div>
+        <div class="row-right">
+          <span class="badge badge-danger">Atrasado</span>
+          <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-dot dot-danger"></div>
+          <div>
+            <div class="row-name">Revestimiento Food Court #2</div>
+            <div class="row-meta">Subcuenta Food Court #2 · venció 5 may · 7 días de atraso</div>
+          </div>
+        </div>
+        <div class="row-right">
+          <span class="badge badge-danger">Atrasado</span>
+          <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="tab-tickets" style="display:none">
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-dot dot-danger"></div>
+          <div>
+            <div class="row-name">Revisión estructural columnas</div>
+            <div class="row-meta">Asignado a: Juan Pérez · venció 8 may · 4 días de atraso</div>
+          </div>
+        </div>
+        <div class="row-right">
+          <span class="badge badge-danger">Atrasado</span>
+          <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-dot dot-danger"></div>
+          <div>
+            <div class="row-name">Instalación tuberías SWT LIB</div>
+            <div class="row-meta">Asignado a: María González · venció 10 may · 2 días de atraso</div>
+          </div>
+        </div>
+        <div class="row-right">
+          <span class="badge badge-danger">Atrasado</span>
+          <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-dot dot-warn"></div>
+          <div>
+            <div class="row-name">Pintura exterior Bloques</div>
+            <div class="row-meta">Asignado a: Carlos Méndez · vence hoy</div>
+          </div>
+        </div>
+        <div class="row-right">
+          <span class="badge badge-warn">Vence hoy</span>
+          <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchTab(el, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-proyectos').style.display = tab==='proyectos'?'block':'none';
+  document.getElementById('tab-tickets').style.display = tab==='tickets'?'block':'none';
+}
+</script>
