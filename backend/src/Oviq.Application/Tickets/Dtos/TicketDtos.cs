@@ -31,6 +31,11 @@ public class CrearTicketDto
     public DateTime? FechaFin { get; set; }
 }
 
+public class CambiarEstadoTicketDto
+{
+    public int EstadoId { get; set; }
+}
+
 // No incluye ProyectoId: un ticket no cambia de proyecto una vez creado
 // (rompería la secuencia de Codigo, que se reinicia por proyecto).
 public class ActualizarTicketDto

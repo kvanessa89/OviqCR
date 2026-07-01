@@ -89,6 +89,24 @@ public class TicketService : ITicketService
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task CambiarEstadoAsync(int id, int estadoId, CancellationToken cancellationToken = default)
+    {
+        var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException($"Ticket {id} no encontrado");
+
+        ticket.EstadoId = estadoId;
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task EliminarAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException($"Ticket {id} no encontrado");
+
+        _context.Tickets.Remove(ticket);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     private IQueryable<Ticket> ConsultaBase() =>
         _context.Tickets
             .Include(t => t.Proyecto)

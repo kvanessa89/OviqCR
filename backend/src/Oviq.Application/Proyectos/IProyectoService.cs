@@ -9,7 +9,6 @@ public interface IProyectoService
     Task<ProyectoDto> CrearAsync(CrearProyectoDto dto, CancellationToken cancellationToken = default);
     Task ActualizarAsync(int id, ActualizarProyectoDto dto, CancellationToken cancellationToken = default);
 
-    // Transición manual: en_curso -> completado (botón "Marcar finalizado" del mockup).
-    // pendiente_de_facturar -> facturado se implementa cuando exista la entidad Factura.
-    Task MarcarCompletadoAsync(int id, CancellationToken cancellationToken = default);
+    Task MarcarFinalizadoAsync(int id, CancellationToken cancellationToken = default);
+    Task EliminarAsync(int id, CancellationToken cancellationToken = default);
 }

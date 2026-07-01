@@ -56,12 +56,19 @@ public class ProyectosController : ControllerBase
         return NoContent();
     }
 
-    // Botón "Marcar finalizado" del mockup: en_curso -> completado
-    [HttpPost("{id}/marcar-completado")]
+    [HttpPost("{id}/marcar-finalizado")]
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> MarcarCompletado(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> MarcarFinalizado(int id, CancellationToken cancellationToken)
     {
-        await _proyectoService.MarcarCompletadoAsync(id, cancellationToken);
+        await _proyectoService.MarcarFinalizadoAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Eliminar(int id, CancellationToken cancellationToken)
+    {
+        await _proyectoService.EliminarAsync(id, cancellationToken);
         return NoContent();
     }
 }

@@ -59,4 +59,19 @@ public class TicketsController : ControllerBase
         await _ticketService.ActualizarAsync(id, dto, cancellationToken);
         return NoContent();
     }
+
+    [HttpPatch("{id}/estado")]
+    public async Task<IActionResult> CambiarEstado(int id, [FromBody] CambiarEstadoTicketDto dto, CancellationToken cancellationToken)
+    {
+        await _ticketService.CambiarEstadoAsync(id, dto.EstadoId, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Eliminar(int id, CancellationToken cancellationToken)
+    {
+        await _ticketService.EliminarAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

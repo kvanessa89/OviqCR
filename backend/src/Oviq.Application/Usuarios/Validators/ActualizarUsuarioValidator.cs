@@ -1,44 +1,27 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using Oviq.Application.Common.Interfaces;
 using Oviq.Application.Usuarios.Dtos;
 
 namespace Oviq.Application.Usuarios.Validators;
 
 public class ActualizarUsuarioValidator : AbstractValidator<ActualizarUsuarioDto>
 {
-    private readonly IApplicationDbContext _context;
-
-    public ActualizarUsuarioValidator(IApplicationDbContext context)
+    public ActualizarUsuarioValidator()
     {
-        _context = context;
-
         RuleFor(x => x.Nombre).NotEmpty().MaximumLength(150);
+        RuleFor(x => x.Email).NotEmpty().EmailAddress().WithMessage("El email no es válido");
 
-        // Regla de negocio #9 al editar: si viene perfil, también debe ser consistente
-        RuleFor(x => x.PerfilTrabajador)
-            .MustAsync(TenerMontoConsistenteConFormaPagoAsync)
-            .WithMessage("El monto cargado no coincide con la forma de pago: " +
-                         "'horas' requiere TarifaHora (sin MontoContrato), " +
-                         "'contrato' requiere MontoContrato (sin TarifaHora)")
+        RuleFor(x => x.Rol)
+            .Must(r => r is "Administrador" or "Trabajador")
+            .WithMessage("El rol debe ser Administrador o Trabajador");
+
+        RuleFor(x => x.Password)
+            .MinimumLength(8).WithMessage("La contraseña debe tener al menos 8 caracteres")
+            .When(x => x.Password is not null);
+
+        RuleFor(x => x.PerfilTrabajador!.Cargo)
+            .NotEmpty().WithMessage("El cargo es requerido")
+            .Must(c => c is "Supervisor" or "Tecnico")
+            .WithMessage("El cargo debe ser Supervisor o Tecnico")
             .When(x => x.PerfilTrabajador is not null);
-    }
-
-    private async Task<bool> TenerMontoConsistenteConFormaPagoAsync(
-        CrearPerfilTrabajadorDto? perfil, CancellationToken cancellationToken)
-    {
-        if (perfil is null) return true;
-
-        var formaPago = await _context.FormasPago
-            .FirstOrDefaultAsync(f => f.Id == perfil.FormaPagoId, cancellationToken);
-
-        if (formaPago is null) return false;
-
-        return formaPago.Codigo switch
-        {
-            "horas" => perfil.TarifaHora.HasValue && perfil.MontoContrato is null,
-            "contrato" => perfil.MontoContrato.HasValue && perfil.TarifaHora is null,
-            _ => false
-        };
     }
 }

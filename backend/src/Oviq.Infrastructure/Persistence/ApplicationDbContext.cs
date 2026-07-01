@@ -29,6 +29,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<ComentarioProyecto> Comentarios => Set<ComentarioProyecto>();
     public DbSet<PerfilTrabajador> PerfilesTrabajador => Set<PerfilTrabajador>();
+    public DbSet<Factura> Facturas => Set<Factura>();
 
     // Catálogos
     public DbSet<EstadoCliente> EstadosCliente => Set<EstadoCliente>();
@@ -37,6 +38,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<PrioridadTicket> PrioridadesTicket => Set<PrioridadTicket>();
     public DbSet<EstadoTicket> EstadosTicket => Set<EstadoTicket>();
     public DbSet<FormaPago> FormasPago => Set<FormaPago>();
+    public DbSet<EstadoFactura> EstadosFactura => Set<EstadoFactura>();
+    public DbSet<Cargo> Cargos => Set<Cargo>();
+    public DbSet<EstadoFinancieroProyecto> EstadosFinancieroProyecto => Set<EstadoFinancieroProyecto>();
+    public DbSet<GastoProyecto> GastosProyecto => Set<GastoProyecto>();
+    public DbSet<PagoProyecto> PagosProyecto => Set<PagoProyecto>();
+    public DbSet<ProyectoResumenFinanciero> ProyectosResumenFinanciero => Set<ProyectoResumenFinanciero>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

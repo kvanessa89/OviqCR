@@ -16,6 +16,12 @@ public class ProyectoDto
     public DateTime? FechaFin { get; set; }
     public string? Descripcion { get; set; }
     public OrdenCompraDto? OrdenCompra { get; set; }
+    public decimal? PresupuestoInicial { get; set; }
+    public int? EstadoFinancieroId { get; set; }
+    public string? EstadoFinancieroCodigo { get; set; }
+    public string? EstadoFinancieroNombre { get; set; }
+    public int CantidadFacturasEmitidas { get; set; }
+    public bool RequiereFactura { get; set; }
 }
 
 public class OrdenCompraDto
@@ -39,6 +45,8 @@ public class CrearProyectoDto
     public DateTime? FechaInicio { get; set; }
     public DateTime? FechaFin { get; set; }
     public string? Descripcion { get; set; }
+    public bool RequiereFactura { get; set; } = true;
+    public decimal? PresupuestoInicial { get; set; }
     public CrearOrdenCompraDto? OrdenCompra { get; set; }
 }
 
@@ -64,5 +72,7 @@ public class ActualizarProyectoDto
     public DateTime? FechaInicio { get; set; }
     public DateTime? FechaFin { get; set; }
     public string? Descripcion { get; set; }
+    public bool RequiereFactura { get; set; } = true;
+    public decimal? PresupuestoInicial { get; set; }
     public CrearOrdenCompraDto? OrdenCompra { get; set; }
 }

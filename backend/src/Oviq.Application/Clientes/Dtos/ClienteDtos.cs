@@ -6,6 +6,7 @@ public class ClienteDto
 {
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
+    public int EstadoId { get; set; }
     public string EstadoCodigo { get; set; } = string.Empty;
     public string EstadoNombre { get; set; } = string.Empty;
     public string? Contacto { get; set; }
@@ -70,4 +71,30 @@ public class ActualizarClienteDto
     public string? Email { get; set; }
     public string? Telefono { get; set; }
     public string? Descripcion { get; set; }
+}
+
+// ── Clasificaciones ────────────────────────────────────────────────────────
+
+public class CrearClasificacionClienteDto
+{
+    public string Nombre { get; set; } = string.Empty;
+}
+
+public class ActualizarClasificacionClienteDto
+{
+    public string Nombre { get; set; } = string.Empty;
+}
+
+// ── Subcuentas ─────────────────────────────────────────────────────────────
+
+public class CrearSubcuentaClienteDto
+{
+    public string Nombre { get; set; } = string.Empty;
+    public int? ClasificacionId { get; set; }
+}
+
+public class ActualizarSubcuentaClienteDto
+{
+    public string Nombre { get; set; } = string.Empty;
+    public int? ClasificacionId { get; set; }
 }

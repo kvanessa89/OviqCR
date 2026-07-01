@@ -23,7 +23,17 @@ public class Proyecto : BaseEntity
     public DateTime? FechaFin { get; set; }
     public string? Descripcion { get; set; }
 
+    public bool RequiereFactura { get; set; } = true;
+    public decimal? PresupuestoInicial { get; set; }
+
+    public int? EstadoFinancieroId { get; set; }
+    public EstadoFinancieroProyecto? EstadoFinanciero { get; set; }
+
     public OrdenCompra? OrdenCompra { get; set; }
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
     public ICollection<ComentarioProyecto> Comentarios { get; set; } = new List<ComentarioProyecto>();
+    public ICollection<Factura> Facturas { get; set; } = new List<Factura>();
+    public ICollection<GastoProyecto> Gastos { get; set; } = new List<GastoProyecto>();
+    public ICollection<PagoProyecto> Pagos { get; set; } = new List<PagoProyecto>();
+    public ProyectoResumenFinanciero? ResumenFinanciero { get; set; }
 }

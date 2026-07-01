@@ -12,8 +12,9 @@ public class PerfilTrabajador : BaseEntity
     public int FormaPagoId { get; set; }
     public FormaPago FormaPago { get; set; } = null!;
 
-    // Mutuamente excluyentes según FormaPago.Codigo ("horas" / "contrato").
-    // Se valida en la capa Application, no acá.
-    public decimal? TarifaHora { get; set; }
-    public decimal? MontoContrato { get; set; }
+    // "Supervisor" o "Tecnico"
+    public string Cargo { get; set; } = string.Empty;
+
+    public string? EmailContacto { get; set; }
+    public string? Telefono { get; set; }
 }

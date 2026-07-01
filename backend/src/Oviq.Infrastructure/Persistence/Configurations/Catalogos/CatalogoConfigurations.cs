@@ -21,3 +21,6 @@ public class PrioridadTicketConfiguration : CatalogoConfiguration<PrioridadTicke
 public class EstadoTicketConfiguration : CatalogoConfiguration<EstadoTicket> { }
 public class FormaPagoConfiguration : CatalogoConfiguration<FormaPago> { }
 public class MonedaConfiguration : CatalogoConfiguration<Moneda> { }
+public class EstadoFacturaConfiguration : CatalogoConfiguration<EstadoFactura> { }
+public class CargoConfiguration : CatalogoConfiguration<Cargo> { }
+public class EstadoFinancieroProyectoConfiguration : CatalogoConfiguration<EstadoFinancieroProyecto> { }

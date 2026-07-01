@@ -36,7 +36,9 @@ public class ProyectoService : IProyectoService
             EstadoId = dto.EstadoId,
             FechaInicio = dto.FechaInicio,
             FechaFin = dto.FechaFin,
-            Descripcion = dto.Descripcion
+            Descripcion = dto.Descripcion,
+            RequiereFactura = dto.RequiereFactura,
+            PresupuestoInicial = dto.PresupuestoInicial,
         };
 
         if (dto.OrdenCompra is not null)
@@ -86,6 +88,8 @@ public class ProyectoService : IProyectoService
         proyecto.FechaInicio = dto.FechaInicio;
         proyecto.FechaFin = dto.FechaFin;
         proyecto.Descripcion = dto.Descripcion;
+        proyecto.RequiereFactura = dto.RequiereFactura;
+        proyecto.PresupuestoInicial = dto.PresupuestoInicial;
 
         if (dto.OrdenCompra is not null)
         {
@@ -105,16 +109,50 @@ public class ProyectoService : IProyectoService
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task MarcarCompletadoAsync(int id, CancellationToken cancellationToken = default)
+    public async Task MarcarFinalizadoAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var proyecto = await _context.Proyectos
+            .Include(p => p.Facturas).ThenInclude(f => f.Estado)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException($"Proyecto {id} no encontrado");
+
+        var estadoFinalizado = await _context.EstadosProyecto
+            .FirstOrDefaultAsync(e => e.Codigo == "finalizado", cancellationToken)
+            ?? throw new InvalidOperationException("No existe el estado 'finalizado' en el catálogo EstadoProyecto");
+
+        proyecto.EstadoId = estadoFinalizado.Id;
+
+        string codigoEF;
+        if (!proyecto.RequiereFactura)
+        {
+            codigoEF = "pendiente_de_cobro";
+        }
+        else if (!proyecto.Facturas.Any(f => f.Estado.Codigo == "emitida"))
+        {
+            codigoEF = "pendiente_de_facturar";
+        }
+        else
+        {
+            // Ya tiene facturas emitidas — el estado financiero fue asignado al emitir la factura
+            await _context.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var estadoFinanciero = await _context.EstadosFinancieroProyecto
+            .FirstOrDefaultAsync(e => e.Codigo == codigoEF, cancellationToken);
+
+        if (estadoFinanciero is not null)
+            proyecto.EstadoFinancieroId = estadoFinanciero.Id;
+
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task EliminarAsync(int id, CancellationToken cancellationToken = default)
     {
         var proyecto = await _context.Proyectos.FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException($"Proyecto {id} no encontrado");
 
-        var estadoCompletado = await _context.EstadosProyecto
-            .FirstOrDefaultAsync(e => e.Codigo == "completado", cancellationToken)
-            ?? throw new InvalidOperationException("No existe el estado 'completado' en el catálogo EstadoProyecto");
-
-        proyecto.EstadoId = estadoCompletado.Id;
+        _context.Proyectos.Remove(proyecto);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -123,8 +161,11 @@ public class ProyectoService : IProyectoService
             .Include(p => p.Cliente)
             .Include(p => p.Subcuenta)
             .Include(p => p.Estado)
+            .Include(p => p.EstadoFinanciero)
             .Include(p => p.OrdenCompra)
-                .ThenInclude(o => o!.Moneda);
+                .ThenInclude(o => o!.Moneda)
+            .Include(p => p.Facturas)
+                .ThenInclude(f => f.Estado);
 
     private static ProyectoDto MapToDto(Proyecto p) => new()
     {
@@ -147,6 +188,12 @@ public class ProyectoService : IProyectoService
             Detalle = p.OrdenCompra.Detalle,
             MontoTotal = p.OrdenCompra.MontoTotal,
             MonedaCodigo = p.OrdenCompra.Moneda.Codigo
-        }
+        },
+        CantidadFacturasEmitidas = p.Facturas.Count(f => f.Estado.Codigo == "emitida"),
+        RequiereFactura = p.RequiereFactura,
+        PresupuestoInicial = p.PresupuestoInicial,
+        EstadoFinancieroId = p.EstadoFinancieroId,
+        EstadoFinancieroCodigo = p.EstadoFinanciero?.Codigo,
+        EstadoFinancieroNombre = p.EstadoFinanciero?.Nombre,
     };
 }

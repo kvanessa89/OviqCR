@@ -55,4 +55,64 @@ public class ClientesController : ControllerBase
         await _clienteService.ActualizarAsync(id, dto, cancellationToken);
         return NoContent();
     }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Eliminar(int id, CancellationToken cancellationToken)
+    {
+        await _clienteService.EliminarAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    // ── Clasificaciones ────────────────────────────────────────────────
+
+    [HttpPost("{clienteId}/clasificaciones")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<ClasificacionDto>> AgregarClasificacion(int clienteId, CrearClasificacionClienteDto dto, CancellationToken cancellationToken)
+    {
+        var result = await _clienteService.AgregarClasificacionAsync(clienteId, dto, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPut("{clienteId}/clasificaciones/{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> RenombrarClasificacion(int clienteId, int id, ActualizarClasificacionClienteDto dto, CancellationToken cancellationToken)
+    {
+        await _clienteService.RenombrarClasificacionAsync(clienteId, id, dto, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{clienteId}/clasificaciones/{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> EliminarClasificacion(int clienteId, int id, CancellationToken cancellationToken)
+    {
+        await _clienteService.EliminarClasificacionAsync(clienteId, id, cancellationToken);
+        return NoContent();
+    }
+
+    // ── Subcuentas ─────────────────────────────────────────────────────
+
+    [HttpPost("{clienteId}/subcuentas")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<SubcuentaDto>> AgregarSubcuenta(int clienteId, CrearSubcuentaClienteDto dto, CancellationToken cancellationToken)
+    {
+        var result = await _clienteService.AgregarSubcuentaAsync(clienteId, dto, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPut("{clienteId}/subcuentas/{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> ActualizarSubcuenta(int clienteId, int id, ActualizarSubcuentaClienteDto dto, CancellationToken cancellationToken)
+    {
+        await _clienteService.ActualizarSubcuentaAsync(clienteId, id, dto, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{clienteId}/subcuentas/{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> EliminarSubcuenta(int clienteId, int id, CancellationToken cancellationToken)
+    {
+        await _clienteService.EliminarSubcuentaAsync(clienteId, id, cancellationToken);
+        return NoContent();
+    }
 }

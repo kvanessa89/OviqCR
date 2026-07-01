@@ -7,6 +7,9 @@ using Oviq.API.Middleware;
 using Oviq.API.Services;
 using Oviq.Application.Auth;
 using Oviq.Application.Catalogos;
+using Oviq.Application.Facturas;
+using Oviq.Application.Gastos;
+using Oviq.Application.Pagos;
 using Oviq.Application.Clientes;
 using Oviq.Application.Clientes.Validators;
 using Oviq.Application.Comentarios;
@@ -31,7 +34,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     options.Password.RequiredLength = 8;
 })
     .AddRoles<ApplicationRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddErrorDescriber<SpanishIdentityErrorDescriber>();
 
 // ── JWT ─────────────────────────────────────────────────────────────
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
@@ -93,6 +97,10 @@ builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped(typeof(ICatalogoService<>), typeof(CatalogoService<>));
 builder.Services.AddScoped<IComentarioProyectoService, ComentarioProyectoService>();
 builder.Services.AddScoped<IComentarioTicketService, ComentarioTicketService>();
+builder.Services.AddScoped<IFacturaService, FacturaService>();
+builder.Services.AddScoped<IGastoProyectoService, GastoProyectoService>();
+builder.Services.AddScoped<IPagoProyectoService, PagoProyectoService>();
+builder.Services.AddScoped<IProyectoResumenFinancieroService, ProyectoResumenFinancieroService>();
 
 // ── Validadores (FluentValidation) ──────────────────────────────────
 builder.Services.AddValidatorsFromAssemblyContaining<CrearClienteValidator>();
@@ -155,6 +163,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseCors(FrontendCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();

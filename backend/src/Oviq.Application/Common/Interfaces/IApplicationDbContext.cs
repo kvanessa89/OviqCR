@@ -29,6 +29,13 @@ public interface IApplicationDbContext
     DbSet<PrioridadTicket> PrioridadesTicket { get; }
     DbSet<EstadoTicket> EstadosTicket { get; }
     DbSet<FormaPago> FormasPago { get; }
+    DbSet<Factura> Facturas { get; }
+    DbSet<EstadoFactura> EstadosFactura { get; }
+    DbSet<Cargo> Cargos { get; }
+    DbSet<EstadoFinancieroProyecto> EstadosFinancieroProyecto { get; }
+    DbSet<GastoProyecto> GastosProyecto { get; }
+    DbSet<PagoProyecto> PagosProyecto { get; }
+    DbSet<ProyectoResumenFinanciero> ProyectosResumenFinanciero { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

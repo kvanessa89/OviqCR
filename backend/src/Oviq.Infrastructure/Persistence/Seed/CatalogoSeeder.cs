@@ -13,6 +13,9 @@ public static class CatalogoSeeder
         await SeedPrioridadTicketAsync(context);
         await SeedEstadoTicketAsync(context);
         await SeedFormaPagoAsync(context);
+        await SeedEstadoFacturaAsync(context);
+        await SeedCargosAsync(context);
+        await SeedEstadoFinancieroProyectoAsync(context);
 
         await context.SaveChangesAsync();
     }
@@ -32,10 +35,9 @@ public static class CatalogoSeeder
         if (await context.EstadosProyecto.AnyAsync()) return;
 
         context.EstadosProyecto.AddRange(
-            new EstadoProyecto { Codigo = "en_curso", Nombre = "En curso", Orden = 1 },
-            new EstadoProyecto { Codigo = "completado", Nombre = "Completado", Orden = 2 },
-            new EstadoProyecto { Codigo = "pendiente_de_facturar", Nombre = "Pendiente de facturar", Orden = 3 },
-            new EstadoProyecto { Codigo = "facturado", Nombre = "Facturado", Orden = 4 }
+            new EstadoProyecto { Codigo = "en_progreso", Nombre = "En progreso", Orden = 1 },
+            new EstadoProyecto { Codigo = "en_pausa",    Nombre = "En pausa",    Orden = 2 },
+            new EstadoProyecto { Codigo = "finalizado",  Nombre = "Finalizado",  Orden = 3 }
         );
     }
 
@@ -78,6 +80,40 @@ public static class CatalogoSeeder
         context.FormasPago.AddRange(
             new FormaPago { Codigo = "contrato", Nombre = "Por contrato", Orden = 1 },
             new FormaPago { Codigo = "horas", Nombre = "Por horas", Orden = 2 }
+        );
+    }
+
+    private static async Task SeedEstadoFacturaAsync(ApplicationDbContext context)
+    {
+        if (await context.EstadosFactura.AnyAsync()) return;
+
+        context.EstadosFactura.AddRange(
+            new EstadoFactura { Codigo = "emitida", Nombre = "Emitida", Orden = 1 },
+            new EstadoFactura { Codigo = "pagada",  Nombre = "Pagada",  Orden = 2 }
+        );
+    }
+
+    private static async Task SeedEstadoFinancieroProyectoAsync(ApplicationDbContext context)
+    {
+        if (await context.EstadosFinancieroProyecto.AnyAsync()) return;
+
+        context.EstadosFinancieroProyecto.AddRange(
+            new EstadoFinancieroProyecto { Codigo = "pendiente_de_facturar",  Nombre = "Pendiente de Facturar",  Orden = 1 },
+            new EstadoFinancieroProyecto { Codigo = "facturado",              Nombre = "Facturado",              Orden = 2 },
+            new EstadoFinancieroProyecto { Codigo = "pendiente_de_cobro",     Nombre = "Pendiente de Cobro",     Orden = 3 },
+            new EstadoFinancieroProyecto { Codigo = "pendiente_de_pago",      Nombre = "Pendiente de Pago",      Orden = 4 },
+            new EstadoFinancieroProyecto { Codigo = "pagado",                 Nombre = "Pagado",                 Orden = 5 },
+            new EstadoFinancieroProyecto { Codigo = "pagado_parcialmente",    Nombre = "Pagado Parcialmente",    Orden = 6 }
+        );
+    }
+
+    private static async Task SeedCargosAsync(ApplicationDbContext context)
+    {
+        if (await context.Cargos.AnyAsync()) return;
+
+        context.Cargos.AddRange(
+            new Cargo { Codigo = "supervisor", Nombre = "Supervisor", Orden = 1 },
+            new Cargo { Codigo = "tecnico",    Nombre = "Técnico",    Orden = 2 }
         );
     }
 }

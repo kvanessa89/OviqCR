@@ -125,6 +125,50 @@ namespace Oviq.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Oviq.Domain.Entities.Catalogos.Cargo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModificadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Cargos");
+                });
+
             modelBuilder.Entity("Oviq.Domain.Entities.Catalogos.EstadoCliente", b =>
                 {
                     b.Property<int>("Id")
@@ -167,6 +211,94 @@ namespace Oviq.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("EstadosCliente");
+                });
+
+            modelBuilder.Entity("Oviq.Domain.Entities.Catalogos.EstadoFactura", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModificadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("EstadosFactura");
+                });
+
+            modelBuilder.Entity("Oviq.Domain.Entities.Catalogos.EstadoFinancieroProyecto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModificadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("EstadosFinancieroProyecto");
                 });
 
             modelBuilder.Entity("Oviq.Domain.Entities.Catalogos.EstadoProyecto", b =>
@@ -551,6 +683,122 @@ namespace Oviq.Infrastructure.Migrations
                     b.ToTable("ComentarioTicket");
                 });
 
+            modelBuilder.Entity("Oviq.Domain.Entities.Factura", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ArchivoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EstadoId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaEmision")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaEstimadaPago")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModificadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MonedaId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(14,2)");
+
+                    b.Property<string>("Notas")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Numero")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("ProyectoId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("SinIva")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("SubcuentaId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("EstadoId");
+
+                    b.HasIndex("MonedaId");
+
+                    b.HasIndex("ProyectoId");
+
+                    b.HasIndex("SubcuentaId");
+
+                    b.ToTable("Facturas");
+                });
+
+            modelBuilder.Entity("Oviq.Domain.Entities.GastoProyecto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModificadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Monto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("ProyectoId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Rubro")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProyectoId");
+
+                    b.ToTable("GastosProyecto");
+                });
+
             modelBuilder.Entity("Oviq.Domain.Entities.OrdenCompra", b =>
                 {
                     b.Property<int>("Id")
@@ -600,7 +848,7 @@ namespace Oviq.Infrastructure.Migrations
                     b.ToTable("OrdenesCompra");
                 });
 
-            modelBuilder.Entity("Oviq.Domain.Entities.PerfilTrabajador", b =>
+            modelBuilder.Entity("Oviq.Domain.Entities.PagoProyecto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -614,6 +862,57 @@ namespace Oviq.Infrastructure.Migrations
                     b.Property<int?>("CreadoPorId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("FacturaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaPago")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModificadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Monto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("ProyectoId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacturaId");
+
+                    b.HasIndex("ProyectoId");
+
+                    b.ToTable("PagosProyecto");
+                });
+
+            modelBuilder.Entity("Oviq.Domain.Entities.PerfilTrabajador", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Cargo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EmailContacto")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<int>("FormaPagoId")
                         .HasColumnType("integer");
 
@@ -623,11 +922,9 @@ namespace Oviq.Infrastructure.Migrations
                     b.Property<int?>("ModificadoPorId")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("MontoContrato")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<decimal?>("TarifaHora")
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer");
@@ -662,6 +959,9 @@ namespace Oviq.Infrastructure.Migrations
                     b.Property<string>("Descripcion")
                         .HasColumnType("text");
 
+                    b.Property<int?>("EstadoFinancieroId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("EstadoId")
                         .HasColumnType("integer");
 
@@ -682,6 +982,15 @@ namespace Oviq.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<decimal?>("PresupuestoInicial")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<bool>("RequiereFactura")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<int?>("SubcuentaId")
                         .HasColumnType("integer");
 
@@ -689,11 +998,56 @@ namespace Oviq.Infrastructure.Migrations
 
                     b.HasIndex("ClienteId");
 
+                    b.HasIndex("EstadoFinancieroId");
+
                     b.HasIndex("EstadoId");
 
                     b.HasIndex("SubcuentaId");
 
                     b.ToTable("Proyectos");
+                });
+
+            modelBuilder.Entity("Oviq.Domain.Entities.ProyectoResumenFinanciero", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModificadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProyectoId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalCostos")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TotalFacturado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("UtilidadNeta")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProyectoId")
+                        .IsUnique();
+
+                    b.ToTable("ProyectosResumenFinanciero");
                 });
 
             modelBuilder.Entity("Oviq.Domain.Entities.Subcuenta", b =>
@@ -843,6 +1197,9 @@ namespace Oviq.Infrastructure.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -1011,6 +1368,59 @@ namespace Oviq.Infrastructure.Migrations
                     b.Navigation("Ticket");
                 });
 
+            modelBuilder.Entity("Oviq.Domain.Entities.Factura", b =>
+                {
+                    b.HasOne("Oviq.Domain.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Oviq.Domain.Entities.Catalogos.EstadoFactura", "Estado")
+                        .WithMany()
+                        .HasForeignKey("EstadoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Oviq.Domain.Entities.Catalogos.Moneda", "Moneda")
+                        .WithMany()
+                        .HasForeignKey("MonedaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Oviq.Domain.Entities.Proyecto", "Proyecto")
+                        .WithMany("Facturas")
+                        .HasForeignKey("ProyectoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Oviq.Domain.Entities.Subcuenta", "Subcuenta")
+                        .WithMany()
+                        .HasForeignKey("SubcuentaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("Moneda");
+
+                    b.Navigation("Proyecto");
+
+                    b.Navigation("Subcuenta");
+                });
+
+            modelBuilder.Entity("Oviq.Domain.Entities.GastoProyecto", b =>
+                {
+                    b.HasOne("Oviq.Domain.Entities.Proyecto", "Proyecto")
+                        .WithMany("Gastos")
+                        .HasForeignKey("ProyectoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Proyecto");
+                });
+
             modelBuilder.Entity("Oviq.Domain.Entities.OrdenCompra", b =>
                 {
                     b.HasOne("Oviq.Domain.Entities.Catalogos.Moneda", "Moneda")
@@ -1026,6 +1436,24 @@ namespace Oviq.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Moneda");
+
+                    b.Navigation("Proyecto");
+                });
+
+            modelBuilder.Entity("Oviq.Domain.Entities.PagoProyecto", b =>
+                {
+                    b.HasOne("Oviq.Domain.Entities.Factura", "Factura")
+                        .WithMany("Pagos")
+                        .HasForeignKey("FacturaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Oviq.Domain.Entities.Proyecto", "Proyecto")
+                        .WithMany("Pagos")
+                        .HasForeignKey("ProyectoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Factura");
 
                     b.Navigation("Proyecto");
                 });
@@ -1055,6 +1483,11 @@ namespace Oviq.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Oviq.Domain.Entities.Catalogos.EstadoFinancieroProyecto", "EstadoFinanciero")
+                        .WithMany()
+                        .HasForeignKey("EstadoFinancieroId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Oviq.Domain.Entities.Catalogos.EstadoProyecto", "Estado")
                         .WithMany()
                         .HasForeignKey("EstadoId")
@@ -1070,7 +1503,20 @@ namespace Oviq.Infrastructure.Migrations
 
                     b.Navigation("Estado");
 
+                    b.Navigation("EstadoFinanciero");
+
                     b.Navigation("Subcuenta");
+                });
+
+            modelBuilder.Entity("Oviq.Domain.Entities.ProyectoResumenFinanciero", b =>
+                {
+                    b.HasOne("Oviq.Domain.Entities.Proyecto", "Proyecto")
+                        .WithOne("ResumenFinanciero")
+                        .HasForeignKey("Oviq.Domain.Entities.ProyectoResumenFinanciero", "ProyectoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Proyecto");
                 });
 
             modelBuilder.Entity("Oviq.Domain.Entities.Subcuenta", b =>
@@ -1137,11 +1583,24 @@ namespace Oviq.Infrastructure.Migrations
                     b.Navigation("Subcuentas");
                 });
 
+            modelBuilder.Entity("Oviq.Domain.Entities.Factura", b =>
+                {
+                    b.Navigation("Pagos");
+                });
+
             modelBuilder.Entity("Oviq.Domain.Entities.Proyecto", b =>
                 {
                     b.Navigation("Comentarios");
 
+                    b.Navigation("Facturas");
+
+                    b.Navigation("Gastos");
+
                     b.Navigation("OrdenCompra");
+
+                    b.Navigation("Pagos");
+
+                    b.Navigation("ResumenFinanciero");
 
                     b.Navigation("Tickets");
                 });

@@ -15,6 +15,7 @@ export interface LoginDto {
 export interface ClienteDto {
   id: number;
   nombre: string;
+  estadoId: number;
   estadoCodigo: string;
   estadoNombre: string;
   contacto?: string;
@@ -50,6 +51,12 @@ export interface ProyectoDto {
   fechaFin?: string;
   descripcion?: string;
   ordenCompra?: OrdenCompraDto;
+  cantidadFacturasEmitidas: number;
+  requiereFactura: boolean;
+  presupuestoInicial?: number;
+  estadoFinancieroId?: number;
+  estadoFinancieroCodigo?: string;
+  estadoFinancieroNombre?: string;
 }
 
 export interface OrdenCompraDto {
@@ -59,7 +66,7 @@ export interface OrdenCompraDto {
   detalle?: string;
   montoTotal: number;
   monedaCodigo: string;
-  monedaSimbolo: string;
+  monedaSimbolo?: string;
 }
 
 export interface TicketDto {
@@ -84,15 +91,18 @@ export interface UsuarioDto {
   nombre: string;
   email: string;
   rol: string;
+  activo: boolean;
   perfilTrabajador?: PerfilTrabajadorDto;
 }
 
 export interface PerfilTrabajadorDto {
   id: number;
+  formaPagoId: number;
   formaPagoCodigo: string;
   formaPagoNombre: string;
-  tarifaHora?: number;
-  montoContrato?: number;
+  cargo: string;
+  emailContacto?: string;
+  telefono?: string;
 }
 
 export interface ComentarioDto {
@@ -109,4 +119,36 @@ export interface CatalogoDto {
   nombre: string;
   activo: boolean;
   orden: number;
+}
+
+export interface GastoDto {
+  id: number;
+  proyectoId: number;
+  rubro: string;
+  monto: number;
+  creadoEn: string;
+}
+
+export interface FacturaDto {
+  id: number;
+  numero: string;
+  proyectoId: number;
+  proyectoNombre: string;
+  clienteId: number;
+  clienteNombre: string;
+  subcuentaId?: number;
+  subcuentaNombre?: string;
+  monedaId: number;
+  monedaCodigo: string;
+  monedaNombre: string;
+  monto: number;
+  sinIva: boolean;
+  fechaEmision: string;
+  fechaEstimadaPago: string;
+  estadoCodigo: string;
+  estadoNombre: string;
+  estaVencida: boolean;
+  fechaPago?: string;
+  notas?: string;
+  archivoUrl?: string;
 }

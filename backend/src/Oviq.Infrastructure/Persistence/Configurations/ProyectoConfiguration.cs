@@ -9,6 +9,13 @@ public class ProyectoConfiguration : IEntityTypeConfiguration<Proyecto>
     public void Configure(EntityTypeBuilder<Proyecto> builder)
     {
         builder.Property(p => p.Nombre).IsRequired().HasMaxLength(200);
+        builder.Property(p => p.RequiereFactura).HasDefaultValue(true);
+        builder.Property(p => p.PresupuestoInicial).HasPrecision(18, 2);
+
+        builder.HasOne(p => p.EstadoFinanciero)
+               .WithMany()
+               .HasForeignKey(p => p.EstadoFinancieroId)
+               .OnDelete(DeleteBehavior.Restrict);
 
         // Restrict (no Cascade): no se puede borrar un Cliente/Subcuenta mientras
         // tengan Proyectos — protege contra pérdida accidental de datos de negocio.

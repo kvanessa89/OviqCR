@@ -54,7 +54,13 @@ public abstract class CatalogoControllerBase<T> : ControllerBase where T : Catal
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> Desactivar(int id, CancellationToken cancellationToken)
     {
+        if (await EstaEnUsoAsync(id, cancellationToken))
+            return Conflict(new { mensaje = "No se puede eliminar porque está siendo usado." });
+
         await _service.DesactivarAsync(id, cancellationToken);
         return NoContent();
     }
+
+    protected virtual Task<bool> EstaEnUsoAsync(int id, CancellationToken cancellationToken)
+        => Task.FromResult(false);
 }
