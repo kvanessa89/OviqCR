@@ -7,6 +7,7 @@ public class ProyectoResumenFinancieroDto
     public decimal TotalFacturado { get; set; }
     public decimal TotalCostos { get; set; }
     public decimal UtilidadNeta { get; set; }
+    public decimal TotalPagado { get; set; }
 }
 
 public class GuardarResumenFinancieroDto

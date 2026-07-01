@@ -7,6 +7,8 @@ import type { ClienteDto, FacturaDto, ProyectoDto } from '../../types';
 
 interface Props {
   factura?: FacturaDto;
+  proyectoIdFijo?: number;
+  clienteIdFijo?: number;
   onClose: () => void;
   onGuardada: () => void;
 }
@@ -39,7 +41,7 @@ function fmtFecha(iso?: string) {
   return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-export default function NuevaFacturaModal({ factura, onClose, onGuardada }: Props) {
+export default function NuevaFacturaModal({ factura, proyectoIdFijo, clienteIdFijo, onClose, onGuardada }: Props) {
   const editando = !!factura;
   const { items: estados } = useCatalogo('estados-factura');
   const { items: monedas } = useCatalogo('monedas');
@@ -47,9 +49,9 @@ export default function NuevaFacturaModal({ factura, onClose, onGuardada }: Prop
   const [proyectos, setProyectos] = useState<ProyectoDto[]>([]);
 
   const [numero, setNumero]           = useState(factura?.numero ?? '');
-  const [clienteId, setClienteId]     = useState(factura ? String(factura.clienteId) : '');
+  const [clienteId, setClienteId]     = useState(factura ? String(factura.clienteId) : clienteIdFijo ? String(clienteIdFijo) : '');
   const [subcuentaId, setSubcuentaId] = useState(factura?.subcuentaId ? String(factura.subcuentaId) : '');
-  const [proyectoId, setProyectoId]   = useState(factura ? String(factura.proyectoId) : '');
+  const [proyectoId, setProyectoId]   = useState(factura ? String(factura.proyectoId) : proyectoIdFijo ? String(proyectoIdFijo) : '');
   const [monedaId, setMoneda]         = useState(factura ? String(factura.monedaId) : '');
   const [monto, setMonto]             = useState(factura ? String(factura.monto) : '');
   const [sinIva, setSinIva]           = useState(factura?.sinIva ?? false);
@@ -193,7 +195,7 @@ export default function NuevaFacturaModal({ factura, onClose, onGuardada }: Prop
           {/* Cliente */}
           <div className="field">
             <label>Cliente <span className="req">*</span></label>
-            <select className="select" value={clienteId} onChange={e => handleClienteChange(e.target.value)}>
+            <select className="select" value={clienteId} onChange={e => handleClienteChange(e.target.value)} disabled={!!clienteIdFijo}>
               <option value="">Seleccione un cliente...</option>
               {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
             </select>
@@ -221,7 +223,7 @@ export default function NuevaFacturaModal({ factura, onClose, onGuardada }: Prop
               className="select"
               value={proyectoId}
               onChange={e => setProyectoId(e.target.value)}
-              disabled={!clienteId}
+              disabled={!clienteId || !!proyectoIdFijo}
             >
               <option value="">{clienteId ? 'Seleccione un proyecto...' : 'Primero seleccione un cliente'}</option>
               {proyectosFiltrados.map(p => (

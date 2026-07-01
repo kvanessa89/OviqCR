@@ -121,6 +121,14 @@ export interface CatalogoDto {
   orden: number;
 }
 
+export interface PagoProyectoDto {
+  id: number;
+  proyectoId: number;
+  facturaId?: number;
+  monto: number;
+  fechaPago: string;
+}
+
 export interface GastoDto {
   id: number;
   proyectoId: number;

@@ -19,7 +19,17 @@ public class ProyectoResumenFinancieroService : IProyectoResumenFinancieroServic
         var resumen = await _context.ProyectosResumenFinanciero
             .FirstOrDefaultAsync(r => r.ProyectoId == proyectoId, cancellationToken);
 
-        return resumen is null ? null : MapToDto(resumen);
+        var totalPagado = await _context.PagosProyecto
+            .Where(p => p.ProyectoId == proyectoId)
+            .SumAsync(p => p.Monto, cancellationToken);
+
+        if (resumen is null)
+        {
+            if (totalPagado == 0) return null;
+            return new ProyectoResumenFinancieroDto { ProyectoId = proyectoId, TotalPagado = totalPagado };
+        }
+
+        return MapToDto(resumen, totalPagado);
     }
 
     public async Task<ProyectoResumenFinancieroDto> GuardarAsync(int proyectoId, GuardarResumenFinancieroDto dto, CancellationToken cancellationToken = default)
@@ -102,12 +112,13 @@ public class ProyectoResumenFinancieroService : IProyectoResumenFinancieroServic
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private static ProyectoResumenFinancieroDto MapToDto(ProyectoResumenFinanciero r) => new()
+    private static ProyectoResumenFinancieroDto MapToDto(ProyectoResumenFinanciero r, decimal totalPagado = 0) => new()
     {
         Id = r.Id,
         ProyectoId = r.ProyectoId,
         TotalFacturado = r.TotalFacturado,
         TotalCostos = r.TotalCostos,
         UtilidadNeta = r.UtilidadNeta,
+        TotalPagado = totalPagado,
     };
 }

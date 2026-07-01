@@ -5,8 +5,10 @@ import type { ResumenFinancieroDto } from '../../api/proyectos';
 import { getTicketsPorProyecto } from '../../api/tickets';
 import { getComentariosProyecto, crearComentarioProyecto } from '../../api/comentarios';
 import { getFacturasPorProyecto } from '../../api/facturas';
-import { getGastosPorProyecto } from '../../api/gastos';
-import type { ProyectoDto, TicketDto, ComentarioDto, FacturaDto, GastoDto } from '../../types';
+import { getGastosPorProyecto, crearGasto } from '../../api/gastos';
+import { getPagosPorProyecto } from '../../api/pagos';
+import NuevaFacturaModal from '../facturacion/NuevaFacturaModal';
+import type { ProyectoDto, TicketDto, ComentarioDto, FacturaDto, GastoDto, PagoProyectoDto } from '../../types';
 import NuevoTicketModal from './NuevoTicketModal';
 import EditarProyectoModal from './EditarProyectoModal';
 
@@ -71,7 +73,15 @@ export default function ProyectoDetallePage() {
   const [comentarios, setComentarios] = useState<ComentarioDto[]>([]);
   const [facturas, setFacturas]       = useState<FacturaDto[]>([]);
   const [gastos, setGastos]           = useState<GastoDto[]>([]);
+  const [resumen, setResumen]         = useState<ResumenFinancieroDto | null>(null);
+  const [pagos, setPagos]             = useState<PagoProyectoDto[]>([]);
   const [tabActiva, setTabActiva]     = useState<'comentarios' | 'facturas' | 'gastos'>('comentarios');
+  const [modalNuevaFactura, setModalNuevaFactura] = useState(false);
+  const [modalNuevoGasto, setModalNuevoGasto]     = useState(false);
+  const [rubroGasto, setRubroGasto]               = useState('');
+  const [montoGasto, setMontoGasto]               = useState('');
+  const [guardandoGasto, setGuardandoGasto]       = useState(false);
+  const [errGasto, setErrGasto]                   = useState('');
   const [loading, setLoading]         = useState(true);
   const [comentarioTexto, setComentarioTexto]     = useState('');
   const [enviandoComentario, setEnviandoComentario] = useState(false);
@@ -93,24 +103,47 @@ export default function ProyectoDetallePage() {
   const cargar = async () => {
     if (!id) return;
     try {
-      const [p, t, c, f, g] = await Promise.all([
+      const [p, t, c, f, g, r, pg] = await Promise.all([
         getProyecto(Number(id)),
         getTicketsPorProyecto(Number(id)),
         getComentariosProyecto(Number(id)),
         getFacturasPorProyecto(Number(id)),
         getGastosPorProyecto(Number(id)),
+        getResumenFinanciero(Number(id)),
+        getPagosPorProyecto(Number(id)),
       ]);
       setProyecto(p);
       setTickets(t);
       setComentarios(c);
       setFacturas(f);
       setGastos(g);
+      setResumen(r);
+      setPagos(pg);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => { cargar(); }, [id]);
+
+  const handleGuardarGasto = async () => {
+    if (!rubroGasto.trim()) { setErrGasto('El rubro es requerido'); return; }
+    const montoNum = Number(montoGasto);
+    if (!montoGasto || montoNum <= 0) { setErrGasto('El monto debe ser mayor a 0'); return; }
+    setGuardandoGasto(true);
+    try {
+      const nuevo = await crearGasto(Number(id), { rubro: rubroGasto.trim(), monto: montoNum });
+      setGastos(prev => [...prev, nuevo]);
+      setModalNuevoGasto(false);
+      setRubroGasto('');
+      setMontoGasto('');
+      setErrGasto('');
+    } catch {
+      setErrGasto('Error al guardar el gasto');
+    } finally {
+      setGuardandoGasto(false);
+    }
+  };
 
   const enviarComentario = async () => {
     const txt = comentarioTexto.trim();
@@ -252,7 +285,7 @@ export default function ProyectoDetallePage() {
               <i className="fa-solid fa-circle-dollar-to-slot"></i> Cobrar proyecto
             </button>
           )}
-          {(proyecto.estadoFinancieroCodigo === 'pendiente_de_pago' || proyecto.estadoFinancieroCodigo === 'pagado_parcialmente') && (
+          {(proyecto.estadoFinancieroCodigo === 'pendiente_de_pago' || proyecto.estadoFinancieroCodigo === 'pagado_parcialmente') && facturas.length === 0 && (
             <button
               className="btn btn-sm"
               style={{ background: '#fff', border: '1.5px solid var(--border-strong)', color: 'var(--text-2)' }}
@@ -367,7 +400,7 @@ export default function ProyectoDetallePage() {
           {/* Tabs: Comentarios / Facturas / Gastos */}
           <div className="card">
             <div className="card-head" style={{ paddingBottom: 0, borderBottom: 'none' }}>
-              <div className="vg-tab-bar" style={{ marginBottom: 0 }}>
+              <div className="vg-tab-bar" style={{ marginBottom: 0, flex: 1 }}>
                 <button className={`vg-tab${tabActiva === 'comentarios' ? ' active' : ''}`} onClick={() => setTabActiva('comentarios')}>
                   <i className="fa-solid fa-comments"></i> Comentarios
                   {comentarios.length > 0 && <span className="vg-tab-count">{comentarios.length}</span>}
@@ -381,6 +414,16 @@ export default function ProyectoDetallePage() {
                   {gastos.length > 0 && <span className="vg-tab-count">{gastos.length}</span>}
                 </button>
               </div>
+              {tabActiva === 'facturas' && (
+                <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={() => setModalNuevaFactura(true)}>
+                  <i className="fa-solid fa-plus"></i> Agregar
+                </button>
+              )}
+              {tabActiva === 'gastos' && (
+                <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={() => { setRubroGasto(''); setMontoGasto(''); setErrGasto(''); setModalNuevoGasto(true); }}>
+                  <i className="fa-solid fa-plus"></i> Agregar
+                </button>
+              )}
             </div>
 
             {tabActiva === 'comentarios' && (
@@ -506,39 +549,69 @@ export default function ProyectoDetallePage() {
 
         {/* Panel lateral derecho */}
         <div className="card">
-          <div className="card-head"><div className="card-title">Presupuesto del proyecto</div></div>
+          <div className="card-head"><div className="card-title">Costo del proyecto</div></div>
           <div style={{ padding: 16 }}>
-            {proyecto.ordenCompra ? (
-              <>
-                <div className="dp-row">
-                  <span className="lbl">Monto OC</span>
-                  <span className="val">{proyecto.ordenCompra.monedaSimbolo ?? proyecto.ordenCompra.monedaCodigo} {proyecto.ordenCompra.montoTotal.toLocaleString('es-CR')}</span>
-                </div>
-                {proyecto.ordenCompra.numeroOc && (
-                  <div className="dp-row">
-                    <span className="lbl">Número OC</span>
-                    <span className="val" style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{proyecto.ordenCompra.numeroOc}</span>
-                  </div>
-                )}
-                {proyecto.ordenCompra.aQuienFacturar && (
-                  <div className="dp-row">
-                    <span className="lbl">A quién facturar</span>
-                    <span className="val">{proyecto.ordenCompra.aQuienFacturar}</span>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Sin orden de compra registrada.</div>
-            )}
 
-            <div className="dp-section" style={{ marginTop: 14 }}>Descripción</div>
-            <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: 10, fontSize: 12.5, color: 'var(--text-1)' }}>
-              {proyecto.descripcion || 'Sin descripción.'}
-            </div>
+            {/* Financiero */}
+            {(() => {
+              const totalGastos = gastos.reduce((s, g) => s + g.monto, 0);
+              const totalFacturado = resumen?.totalFacturado ?? 0;
+              const utilidadNeta = totalFacturado - totalGastos;
+              const totalPagado = resumen?.totalPagado ?? 0;
+              const pendientePago = Math.max(0, totalFacturado - totalPagado);
+              const fmt = (n: number) => n.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            <div className="dp-section" style={{ marginTop: 14 }}>Fechas</div>
-            <div className="dp-row"><span className="lbl">Inicio</span><span className="val">{fmtFecha(proyecto.fechaInicio)}</span></div>
-            <div className="dp-row"><span className="lbl">Fin estimado</span><span className="val">{fmtFecha(proyecto.fechaFin)}</span></div>
+              return (
+                <>
+                  {proyecto.presupuestoInicial != null && (
+                    <div className="dp-row">
+                      <span className="lbl">Presupuesto inicial</span>
+                      <span className="val" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt(proyecto.presupuestoInicial)}</span>
+                    </div>
+                  )}
+
+                  <div className="dp-row">
+                    <span className="lbl">Total facturado</span>
+                    <span className="val" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt(totalFacturado)}</span>
+                  </div>
+
+                  <div className="dp-row">
+                    <span className="lbl">Total gastos</span>
+                    <span className="val" style={{ fontVariantNumeric: 'tabular-nums', color: gastos.length > 0 ? 'var(--danger)' : undefined }}>{fmt(totalGastos)}</span>
+                  </div>
+
+                  <div className="dp-row" style={{ borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 4 }}>
+                    <span className="lbl" style={{ fontWeight: 700 }}>Utilidad neta</span>
+                    <span className="val" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: utilidadNeta >= 0 ? 'var(--success)' : 'var(--danger)' }}>{fmt(utilidadNeta)}</span>
+                  </div>
+
+                </>
+              );
+            })()}
+
+            {(() => {
+              const totalFacturado = resumen?.totalFacturado ?? 0;
+              const totalPagado    = pagos.reduce((s, p) => s + p.monto, 0);
+              const pendiente      = Math.max(0, totalFacturado - totalPagado);
+              const pctPago        = totalFacturado > 0 ? Math.min(100, Math.round((totalPagado / totalFacturado) * 100)) : 0;
+              const fmt = (n: number) => n.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              if (totalFacturado === 0 && totalPagado === 0) return null;
+              return (
+                <>
+                  <div className="dp-section" style={{ marginTop: 14 }}>Pagos</div>
+                  <div className="dp-row">
+                    <span className="lbl">Pagado</span>
+                    <span className="val" style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--success)' }}>{fmt(totalPagado)}</span>
+                  </div>
+                  {pendiente > 0 && (
+                    <div className="dp-row">
+                      <span className="lbl">Pendiente</span>
+                      <span className="val" style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--warning)' }}>{fmt(pendiente)}</span>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
 
             <div className="dp-section" style={{ marginTop: 14 }}>Avance</div>
             <div style={{ height: 6, background: 'var(--border)', borderRadius: 99, overflow: 'hidden', margin: '8px 0' }}>
@@ -706,6 +779,77 @@ export default function ProyectoDetallePage() {
                 {marcandoFinalizado
                   ? <><i className="fa-solid fa-spinner fa-spin"></i> Procesando...</>
                   : <><i className="fa-solid fa-circle-check"></i> Sí, marcar como finalizado</>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalNuevaFactura && proyecto && (
+        <NuevaFacturaModal
+          proyectoIdFijo={proyecto.id}
+          clienteIdFijo={proyecto.clienteId}
+          onClose={() => setModalNuevaFactura(false)}
+          onGuardada={() => {
+            setModalNuevaFactura(false);
+            getFacturasPorProyecto(proyecto.id).then(setFacturas);
+            cargar();
+          }}
+        />
+      )}
+
+      {modalNuevoGasto && proyecto && (
+        <div className="modal-bg" onMouseDown={e => { (e.currentTarget as HTMLElement).dataset.mdown = e.target === e.currentTarget ? '1' : '0'; }} onClick={e => { if (e.target === e.currentTarget && (e.currentTarget as HTMLElement).dataset.mdown === '1') setModalNuevoGasto(false); }}>
+          <div className="modal" style={{ maxWidth: 400 }}>
+            <div className="modal-head">
+              <i className="fa-solid fa-receipt" style={{ color: 'var(--primary)' }}></i>
+              <div className="modal-title">Nuevo gasto</div>
+              <button className="modal-close" onClick={() => setModalNuevoGasto(false)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="modal-body">
+              {errGasto && (
+                <div style={{ background: 'var(--danger-50)', color: 'var(--danger)', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 14, border: '1px solid #FECACA' }}>
+                  {errGasto}
+                </div>
+              )}
+              <div className="field">
+                <label>Rubro <span className="req">*</span></label>
+                <input
+                  className="input"
+                  placeholder="Ej: Hosting, Licencias..."
+                  value={rubroGasto}
+                  onChange={e => { setRubroGasto(e.target.value); setErrGasto(''); }}
+                  autoFocus
+                />
+              </div>
+              <div className="field">
+                <label>Monto <span className="req">*</span></label>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={montoGasto}
+                  onChange={e => { setMontoGasto(e.target.value); setErrGasto(''); }}
+                />
+              </div>
+            </div>
+            <div className="modal-foot">
+              <button className="btn btn-ghost" onClick={() => setModalNuevoGasto(false)}>
+                Cancelar
+              </button>
+              <button
+                className="btn btn-primary"
+                disabled={guardandoGasto}
+                onClick={handleGuardarGasto}
+              >
+                {guardandoGasto
+                  ? <><i className="fa-solid fa-spinner fa-spin"></i> Guardando...</>
+                  : <><i className="fa-solid fa-floppy-disk"></i> Guardar</>
                 }
               </button>
             </div>

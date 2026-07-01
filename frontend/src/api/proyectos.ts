@@ -34,6 +34,7 @@ export interface ResumenFinancieroDto {
   totalFacturado: number;
   totalCostos: number;
   utilidadNeta: number;
+  totalPagado: number;
 }
 
 export const getResumenFinanciero = async (proyectoId: number): Promise<ResumenFinancieroDto | null> => {
