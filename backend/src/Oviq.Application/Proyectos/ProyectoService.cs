@@ -149,11 +149,45 @@ public class ProyectoService : IProyectoService
 
     public async Task EliminarAsync(int id, CancellationToken cancellationToken = default)
     {
-        var proyecto = await _context.Proyectos.FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
+        var proyecto = await _context.Proyectos
+            .Include(p => p.Facturas)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException($"Proyecto {id} no encontrado");
 
+        foreach (var factura in proyecto.Facturas)
+            EliminarArchivoFactura(factura.ArchivoUrl);
+
+        // Factura -> Proyecto usa DeleteBehavior.Restrict para proteger los datos
+        // fuera de este caso de negocio, por lo que las facturas se eliminan
+        // explícitamente antes del proyecto. Los demás dependientes conservan
+        // sus cascadas configuradas en EF Core.
+        _context.Facturas.RemoveRange(proyecto.Facturas);
         _context.Proyectos.Remove(proyecto);
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static void EliminarArchivoFactura(string? archivoUrl)
+    {
+        if (string.IsNullOrWhiteSpace(archivoUrl))
+            return;
+
+        var wwwroot = Path.GetFullPath(
+            Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"));
+        var rutaArchivo = Path.GetFullPath(
+            Path.Combine(wwwroot, archivoUrl.TrimStart('/', '\\')));
+
+        // ArchivoUrl proviene de la base de datos: se valida que nunca pueda
+        // resolver fuera de wwwroot antes de tocar el sistema de archivos.
+        var prefijoWwwroot = wwwroot.TrimEnd(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+
+        if (!rutaArchivo.StartsWith(prefijoWwwroot, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException(
+                $"La ruta del archivo de la factura no es válida: {archivoUrl}");
+
+        if (File.Exists(rutaArchivo))
+            File.Delete(rutaArchivo);
     }
 
     private IQueryable<Proyecto> ConsultaBase() =>
