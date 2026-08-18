@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getTickets, eliminarTicket } from '../../api/tickets';
 import { getProyectos } from '../../api/proyectos';
-import { getUsuarios } from '../../api/usuarios';
-import type { TicketDto, ProyectoDto, UsuarioDto } from '../../types';
+import type { TicketDto, ProyectoDto } from '../../types';
 import NuevoTicketModal from '../proyectos/NuevoTicketModal';
 import FilterBottomSheet, { type FilterState } from '../../components/ui/FilterBottomSheet';
 import ConfirmDeleteModal from '../../components/ui/ConfirmDeleteModal';
@@ -44,7 +43,6 @@ export default function TicketsPage() {
   const { user } = useAuth();
   const [tickets, setTickets]     = useState<TicketDto[]>([]);
   const [proyectos, setProyectos] = useState<ProyectoDto[]>([]);
-  const [usuarios, setUsuarios]   = useState<UsuarioDto[]>([]);
   const [loading, setLoading]     = useState(true);
 
   const [busqueda, setBusqueda] = useState('');
@@ -66,8 +64,8 @@ export default function TicketsPage() {
   const hoy = new Date().toISOString().slice(0, 10);
 
   const cargar = () =>
-    Promise.all([getTickets(), getProyectos(), getUsuarios()])
-      .then(([t, p, u]) => { setTickets(t); setProyectos(p); setUsuarios(u); })
+    Promise.all([getTickets(), getProyectos()])
+      .then(([t, p]) => { setTickets(t); setProyectos(p); })
       .finally(() => setLoading(false));
 
   useEffect(() => { cargar(); }, []);

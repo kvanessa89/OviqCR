@@ -7,7 +7,7 @@ import NuevoClienteModal from './NuevoClienteModal';
 import EditarClienteModal from './EditarClienteModal';
 import NuevoProyectoModal from '../proyectos/NuevoProyectoModal';
 import ConfirmDeleteModal from '../../components/ui/ConfirmDeleteModal';
-import type { ClienteDto, SubcuentaDto, ClasificacionDto, ProyectoDto } from '../../types';
+import type { ClienteDto, SubcuentaDto, ProyectoDto } from '../../types';
 
 
 

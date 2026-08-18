@@ -15,13 +15,6 @@ function fmtFechaCorta(iso?: string) {
   return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit' });
 }
 
-function fmtPresupuesto(p: ProyectoDto) {
-  if (!p.ordenCompra) return '—';
-  const { montoTotal, monedaCodigo, monedaSimbolo } = p.ordenCompra;
-  const sym = monedaSimbolo ?? (monedaCodigo === 'USD' ? '$' : monedaCodigo === 'EUR' ? '€' : '₡');
-  return `${sym}${montoTotal.toLocaleString('es-CR')}`;
-}
-
 const ESTADO_PROYECTO_COLORS: Record<string, { bg: string; color: string }> = {
   en_progreso: { bg: 'rgba(59,110,245,0.12)',  color: '#1D48B0' },
   en_pausa:    { bg: 'rgba(245,158,11,0.14)',  color: '#B45309' },

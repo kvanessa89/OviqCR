@@ -574,8 +574,6 @@ export default function ProyectoDetallePage() {
               const totalGastos = gastos.reduce((s, g) => s + g.monto, 0);
               const totalFacturado = resumen?.totalFacturado ?? 0;
               const utilidadNeta = totalFacturado - totalGastos;
-              const totalPagado = resumen?.totalPagado ?? 0;
-              const pendientePago = Math.max(0, totalFacturado - totalPagado);
               const fmt = (n: number) => n.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
               return (
@@ -634,7 +632,6 @@ export default function ProyectoDetallePage() {
               const totalFacturado = resumen?.totalFacturado ?? 0;
               const totalPagado    = pagos.reduce((s, p) => s + p.monto, 0);
               const pendiente      = Math.max(0, totalFacturado - totalPagado);
-              const pctPago        = totalFacturado > 0 ? Math.min(100, Math.round((totalPagado / totalFacturado) * 100)) : 0;
               const fmt = (n: number) => n.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
               if (totalFacturado === 0 && totalPagado === 0) return null;
               return (
