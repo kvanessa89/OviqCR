@@ -11,28 +11,18 @@ import FacturacionPage from './pages/facturacion/FacturacionPage';
 import UsuariosPage from './pages/usuarios/UsuariosPage';
 import ConfiguracionPage from './pages/configuracion/ConfiguracionPage';
 import TablonPage from './pages/tablero/TablonPage';
+import CalendarioPage from './pages/calendario/CalendarioPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-// Placeholder para páginas que todavía no están construidas
-function Placeholder({ titulo }: { titulo: string }) {
-  return (
-    <div>
-      <div className="page-head">
-        <div className="ph-left">
-          <div className="page-title">{titulo}</div>
-          <div className="page-subtitle">Esta sección está en construcción.</div>
-        </div>
-      </div>
-      <div className="card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>
-        <i className="fa-solid fa-hammer" style={{ fontSize: 32, marginBottom: 12, display: 'block' }}></i>
-        Próximamente
-      </div>
-    </div>
-  );
+// La Vista rápida es solo para Administradores — un Trabajador que llegue a "/"
+// (por login, o escribiendo la URL a mano) va directo a Proyectos.
+function HomeRoute() {
+  const { user } = useAuth();
+  return user?.rol === 'Administrador' ? <DashboardPage /> : <Navigate to="/proyectos" replace />;
 }
 
 export default function App() {
@@ -55,13 +45,13 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
+        <Route index element={<HomeRoute />} />
         <Route path="clientes" element={<ClientesPage />} />
         <Route path="proyectos"    element={<ProyectosPage />} />
         <Route path="proyectos/:id" element={<ProyectoDetallePage />} />
         <Route path="tickets"      element={<TicketsPage />} />
         <Route path="tablero"      element={<TablonPage />} />
-        <Route path="calendario"   element={<Placeholder titulo="Calendario" />} />
+        <Route path="calendario"   element={<CalendarioPage />} />
         <Route path="trabajadores" element={<UsuariosPage />} />
         <Route path="facturacion"  element={<FacturacionPage />} />
         <Route path="configuracion" element={<ConfiguracionPage />} />

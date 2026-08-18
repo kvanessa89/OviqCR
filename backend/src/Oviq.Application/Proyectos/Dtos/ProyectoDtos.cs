@@ -14,6 +14,7 @@ public class ProyectoDto
     public string EstadoNombre { get; set; } = string.Empty;
     public DateTime? FechaInicio { get; set; }
     public DateTime? FechaFin { get; set; }
+    public DateTime? FechaFinalizado { get; set; }
     public string? Descripcion { get; set; }
     public OrdenCompraDto? OrdenCompra { get; set; }
     public decimal? PresupuestoInicial { get; set; }
@@ -75,4 +76,11 @@ public class ActualizarProyectoDto
     public bool RequiereFactura { get; set; } = true;
     public decimal? PresupuestoInicial { get; set; }
     public CrearOrdenCompraDto? OrdenCompra { get; set; }
+}
+
+// Requerido solo cuando el proyecto no requiere factura: no hay ninguna
+// factura de la cual derivar el monto total, así que se pide al finalizar.
+public class MarcarFinalizadoDto
+{
+    public decimal? MontoTotal { get; set; }
 }

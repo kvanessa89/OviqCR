@@ -58,9 +58,9 @@ public class ProyectosController : ControllerBase
 
     [HttpPost("{id}/marcar-finalizado")]
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> MarcarFinalizado(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> MarcarFinalizado(int id, [FromBody] MarcarFinalizadoDto? dto, CancellationToken cancellationToken)
     {
-        await _proyectoService.MarcarFinalizadoAsync(id, cancellationToken);
+        await _proyectoService.MarcarFinalizadoAsync(id, dto ?? new MarcarFinalizadoDto(), cancellationToken);
         return NoContent();
     }
 

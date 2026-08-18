@@ -33,6 +33,11 @@ function fmtFecha(iso?: string) {
   return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+function fmtFechaCorta(iso?: string) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit' });
+}
+
 export default function TicketsPage() {
   const navigate = useNavigate();
   const [tickets, setTickets]     = useState<TicketDto[]>([]);
@@ -202,51 +207,96 @@ export default function TicketsPage() {
           <div>Ajustá los filtros o creá un nuevo ticket.</div>
         </div>
       ) : (
-        <div className="tlist">
-          <div className="tlist-head">
-            <div>Código</div>
-            <div>Título</div>
-            <div>Proyecto</div>
-            <div>Asignado</div>
-            <div>Prioridad</div>
-            <div>Inicio – Fin</div>
-            <div>Estado</div>
+        <>
+          <div className="tlist tlist-desktop">
+            <div className="tlist-head">
+              <div>Código</div>
+              <div>Título</div>
+              <div>Proyecto</div>
+              <div>Asignado</div>
+              <div>Prioridad</div>
+              <div>Inicio – Fin</div>
+              <div>Estado</div>
+            </div>
+            {filtrados.map(t => {
+              const atrasado = t.estadoCodigo !== 'completado' && !!t.fechaFin && t.fechaFin < hoy;
+              const iniciales = t.usuarioId
+                ? t.usuarioNombre.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+                : '';
+              return (
+                <div key={t.id} className="tlist-row" style={{ cursor: 'pointer' }} onClick={() => setTicketSel(t)}>
+                  <div className="tlist-code">{t.codigo}</div>
+                  <div className="tlist-title">{t.titulo}</div>
+                  <div className="tlist-project">
+                    <span className="pd" style={{ background: '#3B6EF5' }}></span>
+                    {t.proyectoNombre}
+                  </div>
+                  <div className="tlist-assignee">
+                    {t.usuarioId
+                      ? <><div className="av av-xs" style={{ background: '#3B6EF5' }}>{iniciales}</div>{t.usuarioNombre.split(' ')[0]}</>
+                      : <span style={{ color: 'var(--text-3)' }}>—</span>
+                    }
+                  </div>
+                  <div><PrioridadTag codigo={t.prioridadCodigo} /></div>
+                  <div className="tlist-due" style={{ color: atrasado ? 'var(--danger)' : 'var(--text-2)', fontWeight: atrasado ? 700 : 500 }}>
+                    <i className="fa-regular fa-calendar" style={{ marginRight: 4, fontSize: 11 }}></i>
+                    {t.fechaInicio ? `${fmtFecha(t.fechaInicio)} – ` : ''}{fmtFecha(t.fechaFin)}
+                    {atrasado && <i className="fa-solid fa-triangle-exclamation" style={{ marginLeft: 4, fontSize: 11 }}></i>}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <StatusPill codigo={t.estadoCodigo} nombre={t.estadoNombre} />
+                    <button className="cc-menu cc-menu-danger" title="Eliminar" onClick={e => handleEliminarTicket(t, e)}>
+                      <i className="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          {filtrados.map(t => {
-            const atrasado = t.estadoCodigo !== 'completado' && !!t.fechaFin && t.fechaFin < hoy;
-            const iniciales = t.usuarioId
-              ? t.usuarioNombre.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-              : '';
-            return (
-              <div key={t.id} className="tlist-row" style={{ cursor: 'pointer' }} onClick={() => setTicketSel(t)}>
-                <div className="tlist-code">{t.codigo}</div>
-                <div className="tlist-title">{t.titulo}</div>
-                <div className="tlist-project">
-                  <span className="pd" style={{ background: '#3B6EF5' }}></span>
-                  {t.proyectoNombre}
+
+          <div className="tcm-list">
+            {filtrados.map(t => {
+              const atrasado = t.estadoCodigo !== 'completado' && !!t.fechaFin && t.fechaFin < hoy;
+              const iniciales = t.usuarioId
+                ? t.usuarioNombre.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+                : '';
+              const fechasTexto = (t.fechaInicio || t.fechaFin)
+                ? `${fmtFechaCorta(t.fechaInicio)} – ${fmtFechaCorta(t.fechaFin)}`
+                : 'Sin fechas';
+              return (
+                <div key={t.id} className={`tcm-card${atrasado ? ' atrasado' : ''}`} onClick={() => setTicketSel(t)}>
+                  <div className="tcm-top">
+                    <div className="tcm-header">
+                      <div style={{ minWidth: 0 }}>
+                        <div className="tcm-code">{t.codigo}</div>
+                        <div className="tcm-title">{t.titulo}</div>
+                      </div>
+                      <button className="tcm-trash" title="Eliminar" onClick={e => handleEliminarTicket(t, e)}>
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                    <div className="tcm-mid">
+                      <div className="tcm-assignee">
+                        {t.usuarioId
+                          ? <><div className="av av-xs" style={{ background: '#3B6EF5' }}>{iniciales}</div>{t.usuarioNombre.split(' ')[0]}</>
+                          : <span style={{ color: 'var(--text-3)' }}>Sin asignar</span>
+                        }
+                      </div>
+                      <PrioridadTag codigo={t.prioridadCodigo} />
+                    </div>
+                  </div>
+                  <div className={`tcm-bottom${atrasado ? ' atrasado' : ''}`}>
+                    <div className="tcm-dates">
+                      <i className="fa-regular fa-calendar"></i>
+                      <span>{fechasTexto}{atrasado ? ' ⚠ Atrasado' : ''}</span>
+                    </div>
+                    <StatusPill codigo={t.estadoCodigo} nombre={t.estadoNombre} />
+                  </div>
                 </div>
-                <div className="tlist-assignee">
-                  {t.usuarioId
-                    ? <><div className="av av-xs" style={{ background: '#3B6EF5' }}>{iniciales}</div>{t.usuarioNombre.split(' ')[0]}</>
-                    : <span style={{ color: 'var(--text-3)' }}>—</span>
-                  }
-                </div>
-                <div><PrioridadTag codigo={t.prioridadCodigo} /></div>
-                <div className="tlist-due" style={{ color: atrasado ? 'var(--danger)' : 'var(--text-2)', fontWeight: atrasado ? 700 : 500 }}>
-                  <i className="fa-regular fa-calendar" style={{ marginRight: 4, fontSize: 11 }}></i>
-                  {t.fechaInicio ? `${fmtFecha(t.fechaInicio)} – ` : ''}{fmtFecha(t.fechaFin)}
-                  {atrasado && <i className="fa-solid fa-triangle-exclamation" style={{ marginLeft: 4, fontSize: 11 }}></i>}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <StatusPill codigo={t.estadoCodigo} nombre={t.estadoNombre} />
-                  <button className="cc-menu cc-menu-danger" title="Eliminar" onClick={e => handleEliminarTicket(t, e)}>
-                    <i className="fa-solid fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {modalAbierto && (

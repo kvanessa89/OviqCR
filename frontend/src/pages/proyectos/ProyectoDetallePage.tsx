@@ -91,14 +91,14 @@ export default function ProyectoDetallePage() {
   const [confirmFinalizar, setConfirmFinalizar]     = useState(false);
   const [filtroTicket, setFiltroTicket]             = useState('');
   const [marcandoFinalizado, setMarcandoFinalizado] = useState(false);
-  const [modalCobrar, setModalCobrar]               = useState(false);
-  const [montoCobrado, setMontoCobrado]             = useState('');
-  const [guardandoCobro, setGuardandoCobro]         = useState(false);
-  const [errCobro, setErrCobro]                     = useState('');
+  const [montoFinalizar, setMontoFinalizar]         = useState('');
+  const [errFinalizar, setErrFinalizar]             = useState('');
   const [modalPago, setModalPago]                   = useState(false);
   const [montoPago, setMontoPago]                   = useState('');
   const [guardandoPago, setGuardandoPago]           = useState(false);
   const [errPago, setErrPago]                       = useState('');
+  const [montoProyecto, setMontoProyecto]           = useState('');
+  const [guardandoMontoProyecto, setGuardandoMontoProyecto] = useState(false);
 
   const cargar = async () => {
     if (!id) return;
@@ -118,6 +118,7 @@ export default function ProyectoDetallePage() {
       setFacturas(f);
       setGastos(g);
       setResumen(r);
+      setMontoProyecto(r?.totalFacturado ? String(r.totalFacturado) : '');
       setPagos(pg);
     } finally {
       setLoading(false);
@@ -125,6 +126,10 @@ export default function ProyectoDetallePage() {
   };
 
   useEffect(() => { cargar(); }, [id]);
+
+  useEffect(() => {
+    if (proyecto && !proyecto.requiereFactura && tabActiva === 'facturas') setTabActiva('comentarios');
+  }, [proyecto?.requiereFactura]);
 
   const handleGuardarGasto = async () => {
     if (!rubroGasto.trim()) { setErrGasto('El rubro es requerido'); return; }
@@ -160,37 +165,26 @@ export default function ProyectoDetallePage() {
 
   const handleMarcarFinalizado = async () => {
     if (!proyecto || !id) return;
+
+    let monto: number | undefined;
+    if (!proyecto.requiereFactura) {
+      monto = parseFloat(montoFinalizar);
+      if (!montoFinalizar || isNaN(monto) || monto <= 0) {
+        setErrFinalizar('Ingresá el monto total del proyecto.');
+        return;
+      }
+    }
+
     setMarcandoFinalizado(true);
+    setErrFinalizar('');
     try {
-      await marcarFinalizado(Number(id));
+      await marcarFinalizado(Number(id), monto);
+      setConfirmFinalizar(false);
       await cargar();
+    } catch (err: any) {
+      setErrFinalizar(err.response?.data?.mensaje || 'Error al marcar el proyecto como finalizado');
     } finally {
       setMarcandoFinalizado(false);
-    }
-  };
-
-  const handleCobrar = async () => {
-    if (!proyecto || !id) return;
-    const monto = parseFloat(montoCobrado);
-    if (!montoCobrado || isNaN(monto) || monto <= 0) {
-      setErrCobro('Ingresá un monto válido mayor a 0.');
-      return;
-    }
-    setGuardandoCobro(true);
-    setErrCobro('');
-    try {
-      const existente = await getResumenFinanciero(Number(id)).catch(() => null);
-      const totalCostos = existente?.totalCostos ?? 0;
-      await guardarResumenFinanciero(Number(id), {
-        totalFacturado: monto,
-        totalCostos,
-        utilidadNeta: monto - totalCostos,
-      });
-      setModalCobrar(false);
-      setMontoCobrado('');
-      await cargar();
-    } finally {
-      setGuardandoCobro(false);
     }
   };
 
@@ -208,8 +202,38 @@ export default function ProyectoDetallePage() {
       setModalPago(false);
       setMontoPago('');
       await cargar();
+    } catch (err: any) {
+      const mensaje = err.response?.data?.mensaje;
+      setErrPago(
+        mensaje === 'El proyecto no tiene resumen financiero registrado'
+          ? 'Antes de registrar el pago debes ingresar el monto total del proyecto'
+          : mensaje || 'Error al registrar el pago'
+      );
     } finally {
       setGuardandoPago(false);
+    }
+  };
+
+  const handleGuardarMontoProyecto = async () => {
+    if (!id) return;
+    const valorActual = resumen?.totalFacturado ?? 0;
+    const monto = parseFloat(montoProyecto);
+    if (!montoProyecto.trim() || isNaN(monto) || monto < 0) {
+      setMontoProyecto(valorActual ? String(valorActual) : '');
+      return;
+    }
+    if (monto === valorActual) return;
+    setGuardandoMontoProyecto(true);
+    try {
+      const totalCostos = resumen?.totalCostos ?? 0;
+      await guardarResumenFinanciero(Number(id), {
+        totalFacturado: monto,
+        totalCostos,
+        utilidadNeta: monto - totalCostos,
+      });
+      await cargar();
+    } finally {
+      setGuardandoMontoProyecto(false);
     }
   };
 
@@ -267,22 +291,13 @@ export default function ProyectoDetallePage() {
             <button
               className="btn btn-sm"
               style={{ background: '#fff', border: '1.5px solid var(--border-strong)', color: 'var(--text-2)' }}
-              onClick={() => setConfirmFinalizar(true)}
+              onClick={() => { setMontoFinalizar(''); setErrFinalizar(''); setConfirmFinalizar(true); }}
               disabled={marcandoFinalizado}
             >
               {marcandoFinalizado
                 ? <><i className="fa-solid fa-spinner fa-spin"></i> Procesando...</>
                 : <><i className="fa-solid fa-circle-check"></i> Marcar finalizado</>
               }
-            </button>
-          )}
-          {proyecto.estadoFinancieroCodigo === 'pendiente_de_cobro' && (
-            <button
-              className="btn btn-sm"
-              style={{ background: '#fff', border: '1.5px solid var(--border-strong)', color: 'var(--text-2)' }}
-              onClick={() => { setMontoCobrado(''); setErrCobro(''); setModalCobrar(true); }}
-            >
-              <i className="fa-solid fa-circle-dollar-to-slot"></i> Cobrar proyecto
             </button>
           )}
           {(proyecto.estadoFinancieroCodigo === 'pendiente_de_pago' || proyecto.estadoFinancieroCodigo === 'pagado_parcialmente') && facturas.length === 0 && (
@@ -405,16 +420,18 @@ export default function ProyectoDetallePage() {
                   <i className="fa-solid fa-comments"></i> Comentarios
                   {comentarios.length > 0 && <span className="vg-tab-count">{comentarios.length}</span>}
                 </button>
-                <button className={`vg-tab${tabActiva === 'facturas' ? ' active' : ''}`} onClick={() => setTabActiva('facturas')}>
-                  <i className="fa-solid fa-file-invoice-dollar"></i> Facturas
-                  {facturas.length > 0 && <span className="vg-tab-count">{facturas.length}</span>}
-                </button>
+                {proyecto.requiereFactura && (
+                  <button className={`vg-tab${tabActiva === 'facturas' ? ' active' : ''}`} onClick={() => setTabActiva('facturas')}>
+                    <i className="fa-solid fa-file-invoice-dollar"></i> Facturas
+                    {facturas.length > 0 && <span className="vg-tab-count">{facturas.length}</span>}
+                  </button>
+                )}
                 <button className={`vg-tab${tabActiva === 'gastos' ? ' active' : ''}`} onClick={() => setTabActiva('gastos')}>
                   <i className="fa-solid fa-receipt"></i> Gastos
                   {gastos.length > 0 && <span className="vg-tab-count">{gastos.length}</span>}
                 </button>
               </div>
-              {tabActiva === 'facturas' && (
+              {tabActiva === 'facturas' && proyecto.requiereFactura && (
                 <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={() => setModalNuevaFactura(true)}>
                   <i className="fa-solid fa-plus"></i> Agregar
                 </button>
@@ -474,7 +491,7 @@ export default function ProyectoDetallePage() {
               </div>
             )}
 
-            {tabActiva === 'facturas' && (
+            {tabActiva === 'facturas' && proyecto.requiereFactura && (
               <div style={{ padding: '12px 16px' }}>
                 {facturas.length === 0 ? (
                   <div style={{ color: 'var(--text-3)', fontSize: 13, textAlign: 'center', padding: '12px 0' }}>
@@ -570,10 +587,34 @@ export default function ProyectoDetallePage() {
                     </div>
                   )}
 
-                  <div className="dp-row">
-                    <span className="lbl">Total facturado</span>
-                    <span className="val" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt(totalFacturado)}</span>
-                  </div>
+                  {proyecto.requiereFactura ? (
+                    <div className="dp-row">
+                      <span className="lbl">Total facturado</span>
+                      <span className="val" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt(totalFacturado)}</span>
+                    </div>
+                  ) : proyecto.estadoCodigo === 'finalizado' ? (
+                    <div className="dp-row">
+                      <span className="lbl">Total del proyecto</span>
+                      <input
+                        className="input"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={montoProyecto}
+                        onChange={e => setMontoProyecto(e.target.value)}
+                        onBlur={handleGuardarMontoProyecto}
+                        onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                        disabled={guardandoMontoProyecto}
+                        style={{ width: 110, textAlign: 'right', padding: '4px 8px', fontSize: 13 }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="dp-row">
+                      <span className="lbl">Total del proyecto</span>
+                      <span className="val" style={{ color: 'var(--text-3)', fontWeight: 500, fontSize: 12.5 }}>Se ingresa al finalizar</span>
+                    </div>
+                  )}
 
                   <div className="dp-row">
                     <span className="lbl">Total gastos</span>
@@ -598,7 +639,9 @@ export default function ProyectoDetallePage() {
               if (totalFacturado === 0 && totalPagado === 0) return null;
               return (
                 <>
-                  <div className="dp-section" style={{ marginTop: 14 }}>Pagos</div>
+                  <div style={{ marginTop: 24, marginBottom: 8, fontSize: 13.5, fontWeight: 700, color: 'var(--text-1)' }}>
+                    Pagos
+                  </div>
                   <div className="dp-row">
                     <span className="lbl">Pagado</span>
                     <span className="val" style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--success)' }}>{fmt(totalPagado)}</span>
@@ -613,7 +656,7 @@ export default function ProyectoDetallePage() {
               );
             })()}
 
-            <div className="dp-section" style={{ marginTop: 14 }}>Avance</div>
+            <div style={{ marginTop: 24, marginBottom: 8, fontSize: 13.5, fontWeight: 700, color: 'var(--text-1)' }}>Avance</div>
             <div style={{ height: 6, background: 'var(--border)', borderRadius: 99, overflow: 'hidden', margin: '8px 0' }}>
               <div style={{ height: '100%', width: `${pct}%`, background: '#3B6EF5', borderRadius: 99 }}></div>
             </div>
@@ -650,55 +693,6 @@ export default function ProyectoDetallePage() {
         />
       )}
 
-      {modalCobrar && proyecto && (
-        <div className="modal-bg" onMouseDown={e => { (e.currentTarget as HTMLElement).dataset.mdown = e.target === e.currentTarget ? '1' : '0'; }} onClick={e => { if (e.target === e.currentTarget && (e.currentTarget as HTMLElement).dataset.mdown === '1') setModalCobrar(false); }}>
-          <div className="modal" style={{ maxWidth: 420 }}>
-            <div className="modal-head">
-              <i className="fa-solid fa-circle-dollar-to-slot" style={{ color: 'var(--success)' }}></i>
-              <div className="modal-title">Cobro del proyecto</div>
-              <button className="modal-close" onClick={() => setModalCobrar(false)}>
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-            <div className="modal-body">
-              <p style={{ fontSize: 14, color: 'var(--text-1)', marginBottom: 16 }}>
-                ¿Se ha cobrado el proyecto <strong>{proyecto.nombre}</strong>? Indicá el monto cobrado.
-              </p>
-              <div className="field">
-                <label>Monto cobrado</label>
-                <input
-                  className={`input${errCobro ? ' input-error' : ''}`}
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={montoCobrado}
-                  onChange={e => { setMontoCobrado(e.target.value); setErrCobro(''); }}
-                  autoFocus
-                />
-                {errCobro && <div className="field-error">{errCobro}</div>}
-              </div>
-            </div>
-            <div className="modal-foot">
-              <button className="btn btn-ghost" onClick={() => setModalCobrar(false)}>
-                Cancelar
-              </button>
-              <button
-                className="btn btn-primary"
-                style={{ background: 'var(--success)' }}
-                disabled={guardandoCobro}
-                onClick={handleCobrar}
-              >
-                {guardandoCobro
-                  ? <><i className="fa-solid fa-spinner fa-spin"></i> Guardando...</>
-                  : <><i className="fa-solid fa-floppy-disk"></i> Guardar</>
-                }
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {modalPago && proyecto && (
         <div className="modal-bg" onMouseDown={e => { (e.currentTarget as HTMLElement).dataset.mdown = e.target === e.currentTarget ? '1' : '0'; }} onClick={e => { if (e.target === e.currentTarget && (e.currentTarget as HTMLElement).dataset.mdown === '1') setModalPago(false); }}>
           <div className="modal" style={{ maxWidth: 420 }}>
@@ -710,13 +704,18 @@ export default function ProyectoDetallePage() {
               </button>
             </div>
             <div className="modal-body">
+              {errPago && (
+                <div style={{ background: 'var(--danger-50)', color: 'var(--danger)', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 14, border: '1px solid #FECACA' }}>
+                  {errPago}
+                </div>
+              )}
               <p style={{ fontSize: 14, color: 'var(--text-1)', marginBottom: 16 }}>
                 ¿El cliente ha pagado el proyecto <strong>{proyecto.nombre}</strong>? Indicá el monto recibido.
               </p>
               <div className="field">
                 <label>Monto recibido <span style={{ color: 'var(--danger)' }}>*</span></label>
                 <input
-                  className={`input${errPago ? ' input-error' : ''}`}
+                  className="input"
                   type="number"
                   min="0"
                   step="0.01"
@@ -725,7 +724,6 @@ export default function ProyectoDetallePage() {
                   onChange={e => { setMontoPago(e.target.value); setErrPago(''); }}
                   autoFocus
                 />
-                {errPago && <div className="field-error">{errPago}</div>}
               </div>
             </div>
             <div className="modal-foot">
@@ -759,12 +757,32 @@ export default function ProyectoDetallePage() {
               </button>
             </div>
             <div className="modal-body">
+              {errFinalizar && (
+                <div style={{ background: 'var(--danger-50)', color: 'var(--danger)', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 14, border: '1px solid #FECACA' }}>
+                  {errFinalizar}
+                </div>
+              )}
               <p style={{ fontSize: 14, color: 'var(--text-1)' }}>
                 ¿Estás seguro que quieres marcar <strong>{proyecto.nombre}</strong> como finalizado?
               </p>
               <p style={{ marginTop: 8, fontSize: 13, color: 'var(--text-3)' }}>
                 Esta acción cambiará el estado del proyecto a "Finalizado".
               </p>
+              {!proyecto.requiereFactura && (
+                <div className="field" style={{ marginTop: 14 }}>
+                  <label>Monto total del proyecto <span className="req">*</span></label>
+                  <input
+                    className="input"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={montoFinalizar}
+                    onChange={e => { setMontoFinalizar(e.target.value); setErrFinalizar(''); }}
+                    autoFocus
+                  />
+                </div>
+              )}
             </div>
             <div className="modal-foot">
               <button className="btn btn-ghost" onClick={() => setConfirmFinalizar(false)}>
@@ -774,7 +792,7 @@ export default function ProyectoDetallePage() {
                 className="btn btn-primary"
                 style={{ background: 'var(--success)' }}
                 disabled={marcandoFinalizado}
-                onClick={() => { setConfirmFinalizar(false); handleMarcarFinalizado(); }}
+                onClick={handleMarcarFinalizado}
               >
                 {marcandoFinalizado
                   ? <><i className="fa-solid fa-spinner fa-spin"></i> Procesando...</>
@@ -819,7 +837,7 @@ export default function ProyectoDetallePage() {
                 <label>Rubro <span className="req">*</span></label>
                 <input
                   className="input"
-                  placeholder="Ej: Hosting, Licencias..."
+                  placeholder=""
                   value={rubroGasto}
                   onChange={e => { setRubroGasto(e.target.value); setErrGasto(''); }}
                   autoFocus

@@ -36,6 +36,7 @@ public interface IApplicationDbContext
     DbSet<GastoProyecto> GastosProyecto { get; }
     DbSet<PagoProyecto> PagosProyecto { get; }
     DbSet<ProyectoResumenFinanciero> ProyectosResumenFinanciero { get; }
+    DbSet<Nota> Notas { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

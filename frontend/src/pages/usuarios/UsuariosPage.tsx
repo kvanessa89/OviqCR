@@ -37,6 +37,19 @@ function RolPill({ rol }: { rol: string }) {
   );
 }
 
+function RolPillMobile({ rol }: { rol: string }) {
+  const isAdmin = rol === 'Administrador';
+  const c = isAdmin
+    ? { bg: 'rgba(59,110,245,0.12)', color: '#1D48B0' }
+    : { bg: '#CCFBF1', color: '#134E4A' };
+  return (
+    <span className="ucm-rol-pill" style={{ background: c.bg, color: c.color }}>
+      <i className={`fa-solid ${isAdmin ? 'fa-shield-halved' : 'fa-hard-hat'}`}></i>
+      {isAdmin ? 'Admin' : rol}
+    </span>
+  );
+}
+
 function EstadoPill({ activo }: { activo: boolean }) {
   return (
     <span style={{
@@ -184,57 +197,101 @@ export default function UsuariosPage() {
           <div>Ajustá los filtros o creá un nuevo usuario.</div>
         </div>
       ) : (
-        <div className="tlist usr-list">
-          <div className="usr-head">
-            <div>Usuario</div>
-            <div>Email</div>
-            <div>Rol</div>
-            <div>Cargo</div>
-            <div>Modalidad</div>
-            <div>Estado</div>
-            <div></div>
-          </div>
-          {filtrados.map(u => {
-            const esMiUsuario = u.id === user?.usuarioId;
-            return (
-              <div key={u.id} className="usr-row" onClick={() => setUsuarioEditar(u)}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                  <Avatar nombre={u.nombre} rol={u.rol} activo={u.activo} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {u.nombre}
-                      {esMiUsuario && (
-                        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--primary)', background: 'rgba(59,110,245,0.08)', padding: '1px 7px', borderRadius: 99, flexShrink: 0 }}>
-                          Yo
-                        </span>
-                      )}
+        <>
+          <div className="tlist usr-list usr-list-desktop">
+            <div className="usr-head">
+              <div>Usuario</div>
+              <div>Email</div>
+              <div>Rol</div>
+              <div>Cargo</div>
+              <div>Modalidad</div>
+              <div>Estado</div>
+              <div></div>
+            </div>
+            {filtrados.map(u => {
+              const esMiUsuario = u.id === user?.usuarioId;
+              return (
+                <div key={u.id} className="usr-row" onClick={() => setUsuarioEditar(u)}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                    <Avatar nombre={u.nombre} rol={u.rol} activo={u.activo} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {u.nombre}
+                        {esMiUsuario && (
+                          <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--primary)', background: 'rgba(59,110,245,0.08)', padding: '1px 7px', borderRadius: 99, flexShrink: 0 }}>
+                            Yo
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>
+                  <div><RolPill rol={u.rol} /></div>
+                  <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                    {u.perfilTrabajador?.cargo === 'Tecnico' ? 'Técnico' : u.perfilTrabajador?.cargo ?? '—'}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                    {u.perfilTrabajador?.formaPagoNombre ?? '—'}
+                  </div>
+                  <div><EstadoPill activo={u.activo} /></div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      className="cc-menu cc-menu-danger"
+                      title={esMiUsuario ? 'No podés eliminar tu propio usuario' : 'Eliminar'}
+                      disabled={esMiUsuario}
+                      style={{ opacity: esMiUsuario ? 0.3 : undefined, cursor: esMiUsuario ? 'not-allowed' : 'pointer' }}
+                      onClick={e => { e.stopPropagation(); if (!esMiUsuario) { setErrorEliminar(''); setUsuarioEliminando(u); } }}
+                    >
+                      <i className="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>
-                <div><RolPill rol={u.rol} /></div>
-                <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
-                  {u.perfilTrabajador?.cargo === 'Tecnico' ? 'Técnico' : u.perfilTrabajador?.cargo ?? '—'}
+              );
+            })}
+          </div>
+
+          <div className="ucm-list">
+            {filtrados.map(u => {
+              const esMiUsuario = u.id === user?.usuarioId;
+              const isAdmin = u.rol === 'Administrador';
+              const formaPagoIcon = u.perfilTrabajador?.formaPagoCodigo === 'horas' ? 'fa-clock' : 'fa-file-contract';
+              const metaTexto = u.perfilTrabajador
+                ? `${u.perfilTrabajador.formaPagoNombre}${u.perfilTrabajador.cargo ? ` · ${u.perfilTrabajador.cargo === 'Tecnico' ? 'Técnico' : u.perfilTrabajador.cargo}` : ''}`
+                : '—';
+              return (
+                <div key={u.id} className={`ucm-card${isAdmin ? ' admin' : ''}`} onClick={() => setUsuarioEditar(u)}>
+                  <div className="ucm-top">
+                    <div className="ucm-header">
+                      <Avatar nombre={u.nombre} rol={u.rol} activo={u.activo} />
+                      <div className="ucm-info">
+                        <div className="ucm-name">
+                          <span className="ucm-name-text">{u.nombre}</span>
+                          {esMiUsuario && <span className="ucm-you">Yo</span>}
+                        </div>
+                        <div className="ucm-email">{u.email}</div>
+                      </div>
+                      <button
+                        className="ucm-trash"
+                        title={esMiUsuario ? 'No podés eliminar tu propio usuario' : 'Eliminar'}
+                        disabled={esMiUsuario}
+                        onClick={e => { e.stopPropagation(); if (!esMiUsuario) { setErrorEliminar(''); setUsuarioEliminando(u); } }}
+                      >
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="ucm-bottom">
+                    <div className="ucm-meta">
+                      <i className={`fa-solid ${isAdmin ? 'fa-shield-halved' : formaPagoIcon}`}></i>
+                      <span>{isAdmin ? 'Acceso total al sistema' : metaTexto}</span>
+                    </div>
+                    <RolPillMobile rol={u.rol} />
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
-                  {u.perfilTrabajador?.formaPagoNombre ?? '—'}
-                </div>
-                <div><EstadoPill activo={u.activo} /></div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button
-                    className="cc-menu cc-menu-danger"
-                    title={esMiUsuario ? 'No podés eliminar tu propio usuario' : 'Eliminar'}
-                    disabled={esMiUsuario}
-                    style={{ opacity: esMiUsuario ? 0.3 : undefined, cursor: esMiUsuario ? 'not-allowed' : 'pointer' }}
-                    onClick={e => { e.stopPropagation(); if (!esMiUsuario) { setErrorEliminar(''); setUsuarioEliminando(u); } }}
-                  >
-                    <i className="fa-solid fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {modalNuevo && (

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Oviq.Application.Common;
 using Oviq.Application.Common.Interfaces;
 using Oviq.Application.Proyectos.Dtos;
 using Oviq.Domain.Entities;
@@ -109,7 +110,7 @@ public class ProyectoService : IProyectoService
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task MarcarFinalizadoAsync(int id, CancellationToken cancellationToken = default)
+    public async Task MarcarFinalizadoAsync(int id, MarcarFinalizadoDto dto, CancellationToken cancellationToken = default)
     {
         var proyecto = await _context.Proyectos
             .Include(p => p.Facturas).ThenInclude(f => f.Estado)
@@ -121,11 +122,30 @@ public class ProyectoService : IProyectoService
             ?? throw new InvalidOperationException("No existe el estado 'finalizado' en el catálogo EstadoProyecto");
 
         proyecto.EstadoId = estadoFinalizado.Id;
+        // Solo la primera vez que finaliza — no se pisa en llamados posteriores.
+        proyecto.FechaFinalizado ??= DateTime.UtcNow;
 
         string codigoEF;
         if (!proyecto.RequiereFactura)
         {
-            codigoEF = "pendiente_de_cobro";
+            // Sin facturas no hay de dónde derivar el monto total — se exige acá,
+            // al finalizar, en vez de dejarlo editable libremente antes de tiempo.
+            if (dto.MontoTotal is null || dto.MontoTotal <= 0)
+                throw new InvalidOperationException("Debe ingresar el monto total del proyecto para finalizarlo");
+
+            var resumen = await _context.ProyectosResumenFinanciero
+                .FirstOrDefaultAsync(r => r.ProyectoId == id, cancellationToken);
+
+            if (resumen is null)
+            {
+                resumen = new ProyectoResumenFinanciero { ProyectoId = id };
+                _context.ProyectosResumenFinanciero.Add(resumen);
+            }
+
+            resumen.TotalFacturado = dto.MontoTotal.Value;
+            resumen.UtilidadNeta = dto.MontoTotal.Value - resumen.TotalCostos;
+
+            codigoEF = "pendiente_de_pago";
         }
         else if (!proyecto.Facturas.Any(f => f.Estado.Codigo == "emitida"))
         {
@@ -149,9 +169,19 @@ public class ProyectoService : IProyectoService
 
     public async Task EliminarAsync(int id, CancellationToken cancellationToken = default)
     {
-        var proyecto = await _context.Proyectos.FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
+        var proyecto = await _context.Proyectos
+            .Include(p => p.Facturas)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException($"Proyecto {id} no encontrado");
 
+        foreach (var factura in proyecto.Facturas)
+            ArchivoUtils.EliminarArchivoSeguro(factura.ArchivoUrl);
+
+        // Factura -> Proyecto usa DeleteBehavior.Restrict para proteger los datos
+        // fuera de este caso de negocio, por lo que las facturas se eliminan
+        // explícitamente antes del proyecto. Los demás dependientes conservan
+        // sus cascadas configuradas en EF Core.
+        _context.Facturas.RemoveRange(proyecto.Facturas);
         _context.Proyectos.Remove(proyecto);
         await _context.SaveChangesAsync(cancellationToken);
     }
@@ -179,6 +209,7 @@ public class ProyectoService : IProyectoService
         EstadoNombre = p.Estado.Nombre,
         FechaInicio = p.FechaInicio,
         FechaFin = p.FechaFin,
+        FechaFinalizado = p.FechaFinalizado,
         Descripcion = p.Descripcion,
         OrdenCompra = p.OrdenCompra is null ? null : new OrdenCompraDto
         {

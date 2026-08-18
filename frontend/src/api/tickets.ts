@@ -35,6 +35,7 @@ export interface CrearTicketPayload {
   usuarioId?: number;
   prioridadId: number;
   estadoId: number;
+  notaPendiente?: string;
   fechaInicio?: string;
   fechaFin?: string;
 }
@@ -45,6 +46,7 @@ export interface ActualizarTicketPayload {
   usuarioId?: number;
   prioridadId: number;
   estadoId: number;
+  notaPendiente?: string;
   fechaInicio?: string;
   fechaFin?: string;
 }

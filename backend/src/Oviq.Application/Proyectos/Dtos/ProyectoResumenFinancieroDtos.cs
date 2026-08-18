@@ -21,3 +21,16 @@ public class RegistrarPagoClienteDto
 {
     public decimal Monto { get; set; }
 }
+
+public class ResumenMensualDto
+{
+    public decimal ProyectosFacturados { get; set; }
+    public int CantidadFacturasEmitidas { get; set; }
+    public decimal ProyectosSinFactura { get; set; }
+    public int CantidadProyectosSinFactura { get; set; }
+    public decimal Pagado { get; set; }
+    public decimal PendienteDeCobro { get; set; }
+    public decimal Iva { get; set; }
+    public decimal GastosProyectos { get; set; }
+    public decimal Ganancia { get; set; }
+}

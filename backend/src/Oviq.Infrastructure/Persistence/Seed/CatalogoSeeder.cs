@@ -26,7 +26,8 @@ public static class CatalogoSeeder
 
         context.EstadosCliente.AddRange(
             new EstadoCliente { Codigo = "activo", Nombre = "Activo", Orden = 1 },
-            new EstadoCliente { Codigo = "inactivo", Nombre = "Inactivo", Orden = 2 }
+            new EstadoCliente { Codigo = "inactivo", Nombre = "Inactivo", Orden = 2 },
+            new EstadoCliente { Codigo = "prospecto", Nombre = "Prospecto", Orden = 3 }
         );
     }
 
@@ -99,11 +100,9 @@ public static class CatalogoSeeder
 
         context.EstadosFinancieroProyecto.AddRange(
             new EstadoFinancieroProyecto { Codigo = "pendiente_de_facturar",  Nombre = "Pendiente de Facturar",  Orden = 1 },
-            new EstadoFinancieroProyecto { Codigo = "facturado",              Nombre = "Facturado",              Orden = 2 },
-            new EstadoFinancieroProyecto { Codigo = "pendiente_de_cobro",     Nombre = "Pendiente de Cobro",     Orden = 3 },
-            new EstadoFinancieroProyecto { Codigo = "pendiente_de_pago",      Nombre = "Pendiente de Pago",      Orden = 4 },
-            new EstadoFinancieroProyecto { Codigo = "pagado",                 Nombre = "Pagado",                 Orden = 5 },
-            new EstadoFinancieroProyecto { Codigo = "pagado_parcialmente",    Nombre = "Pagado Parcialmente",    Orden = 6 }
+            new EstadoFinancieroProyecto { Codigo = "pendiente_de_pago",      Nombre = "Pendiente de Pago",      Orden = 2 },
+            new EstadoFinancieroProyecto { Codigo = "pagado",                 Nombre = "Pagado",                 Orden = 3 },
+            new EstadoFinancieroProyecto { Codigo = "pagado_parcialmente",    Nombre = "Pagado Parcialmente",    Orden = 4 }
         );
     }
 

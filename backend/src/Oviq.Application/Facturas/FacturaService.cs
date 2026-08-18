@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Oviq.Application.Common;
 using Oviq.Application.Common.Interfaces;
 using Oviq.Application.Facturas.Dtos;
 using Oviq.Domain.Entities;
@@ -172,11 +173,7 @@ public class FacturaService : IFacturaService
         var fileName = $"factura-{id}-{Guid.NewGuid():N}{ext}";
         var rutaFull = Path.Combine(carpeta, fileName);
 
-        if (!string.IsNullOrWhiteSpace(factura.ArchivoUrl))
-        {
-            var anterior = Path.Combine(wwwroot, factura.ArchivoUrl.TrimStart('/'));
-            if (File.Exists(anterior)) File.Delete(anterior);
-        }
+        ArchivoUtils.EliminarArchivoSeguro(factura.ArchivoUrl);
 
         await using var fs = File.Create(rutaFull);
         await archivo.CopyToAsync(fs, cancellationToken);
@@ -192,11 +189,7 @@ public class FacturaService : IFacturaService
         var factura = await _context.Facturas.FirstOrDefaultAsync(f => f.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException($"Factura {id} no encontrada");
 
-        if (!string.IsNullOrWhiteSpace(factura.ArchivoUrl))
-        {
-            var ruta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", factura.ArchivoUrl.TrimStart('/'));
-            if (File.Exists(ruta)) File.Delete(ruta);
-        }
+        ArchivoUtils.EliminarArchivoSeguro(factura.ArchivoUrl);
 
         var proyectoId = factura.ProyectoId;
         _context.Facturas.Remove(factura);
@@ -206,7 +199,7 @@ public class FacturaService : IFacturaService
     }
 
     private static readonly HashSet<string> _estadosFacturaRelacionados =
-        ["facturado", "pendiente_de_pago", "pagado_parcialmente", "pagado"];
+        ["pendiente_de_pago", "pagado_parcialmente", "pagado"];
 
     private async Task SincronizarEstadoFinancieroPorFacturasAsync(int proyectoId, CancellationToken cancellationToken)
     {
@@ -234,7 +227,7 @@ public class FacturaService : IFacturaService
         else if (pagadas > 0)
             codigoNuevo = "pagado_parcialmente";
         else if (emitidas == total)
-            codigoNuevo = "facturado";
+            codigoNuevo = "pendiente_de_pago";
 
         if (codigoNuevo is null) return;
 
@@ -255,12 +248,12 @@ public class FacturaService : IFacturaService
 
         if (proyecto?.EstadoFinanciero?.Codigo != "pendiente_de_facturar") return;
 
-        var estadoFacturado = await _context.EstadosFinancieroProyecto
-            .FirstOrDefaultAsync(e => e.Codigo == "facturado", cancellationToken);
+        var estadoPendientePago = await _context.EstadosFinancieroProyecto
+            .FirstOrDefaultAsync(e => e.Codigo == "pendiente_de_pago", cancellationToken);
 
-        if (estadoFacturado is null) return;
+        if (estadoPendientePago is null) return;
 
-        proyecto.EstadoFinancieroId = estadoFacturado.Id;
+        proyecto.EstadoFinancieroId = estadoPendientePago.Id;
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -295,7 +288,7 @@ public class FacturaService : IFacturaService
         if (estadoEmitida is null || nuevoEstadoFacturaId != estadoEmitida.Id) return;
 
         var estadoFinanciero = await _context.EstadosFinancieroProyecto
-            .FirstOrDefaultAsync(e => e.Codigo == "facturado", cancellationToken);
+            .FirstOrDefaultAsync(e => e.Codigo == "pendiente_de_pago", cancellationToken);
 
         if (estadoFinanciero is null) return;
 

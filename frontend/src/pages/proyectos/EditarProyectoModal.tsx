@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { actualizarProyecto } from '../../api/proyectos';
+import { actualizarProyecto, marcarFinalizado } from '../../api/proyectos';
 import { getCliente } from '../../api/clientes';
 import { useCatalogo } from '../../hooks/useCatalogo';
 import type { ProyectoDto, SubcuentaDto } from '../../types';
@@ -30,6 +30,7 @@ export default function EditarProyectoModal({ proyecto, onClose, onGuardado }: P
   const [detalle, setDetalle]         = useState(proyecto.ordenCompra?.detalle ?? '');
   const [montoTotal, setMonto]        = useState(proyecto.ordenCompra ? String(proyecto.ordenCompra.montoTotal) : '');
   const [monedaId, setMonedaId]       = useState('');
+  const [montoFinalizar, setMontoFinalizar] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
@@ -62,10 +63,25 @@ export default function EditarProyectoModal({ proyecto, onClose, onGuardado }: P
       .catch(() => setSubcuentas([]));
   }, [proyecto.clienteId]);
 
+  const estadoSeleccionado = estados.find(e => String(e.id) === estadoId);
+  // El proyecto pasa a "Finalizado" recién en este guardado (no lo estaba antes)
+  // y no requiere factura -> hay que pedir el monto total acá, no hay factura
+  // de la cual derivarlo.
+  const finalizandoSinFactura =
+    estadoSeleccionado?.codigo === 'finalizado' &&
+    !requiereFactura &&
+    proyecto.estadoCodigo !== 'finalizado';
+
   const handleGuardar = async () => {
     if (!nombre.trim()) { setError('El nombre del proyecto es requerido'); return; }
     if (!estadoId)      { setError('Seleccione un estado'); return; }
     if (tieneOC && !monedaId) { setError('Seleccione la moneda de la orden de compra'); return; }
+
+    const monto = parseFloat(montoFinalizar);
+    if (finalizandoSinFactura && (!montoFinalizar || isNaN(monto) || monto <= 0)) {
+      setError('Ingresá el monto total del proyecto para finalizarlo.');
+      return;
+    }
 
     setError('');
     setLoading(true);
@@ -87,6 +103,11 @@ export default function EditarProyectoModal({ proyecto, onClose, onGuardado }: P
           monedaId: Number(monedaId),
         } : undefined,
       });
+
+      if (finalizandoSinFactura) {
+        await marcarFinalizado(proyecto.id, monto);
+      }
+
       onGuardado();
       onClose();
     } catch (err: any) {
@@ -184,6 +205,24 @@ export default function EditarProyectoModal({ proyecto, onClose, onGuardado }: P
               <span style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--text-1)' }}>Requiere factura</span>
             </label>
           </div>
+
+          {finalizandoSinFactura && (
+            <div className="field">
+              <label>Monto total del proyecto <span className="req">*</span></label>
+              <input
+                className="input"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={montoFinalizar}
+                onChange={e => setMontoFinalizar(e.target.value)}
+              />
+              <span className="muted-sm" style={{ marginTop: 6 }}>
+                El proyecto no requiere factura, así que este monto se pide al finalizarlo.
+              </span>
+            </div>
+          )}
 
           <div className="cm-panel">
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>

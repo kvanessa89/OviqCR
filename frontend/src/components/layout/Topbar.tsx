@@ -27,22 +27,15 @@ export default function Topbar({ onMenuToggle }: TopbarProps) {
 
       {/* Iconos derecha */}
       <div className="tb-right">
-        <button className="tb-icon" title="Sincronizar">
-          <i className="fa-solid fa-arrows-rotate"></i>
-        </button>
-        <button className="tb-icon" title="Agregar">
-          <i className="fa-solid fa-plus"></i>
-        </button>
-        <button className="tb-icon" title="Mensajes">
-          <i className="fa-solid fa-envelope"></i>
-        </button>
         <button className="tb-icon" title="Notificaciones">
           <i className="fa-solid fa-bell"></i>
         </button>
         <div className="tb-user">
           <div className="tb-avatar" style={{ background: '#3B6EF5' }}>{initials}</div>
-          <span className="tu-name">{user?.nombre?.split(' ')[0]}</span>
-          <span className="tu-role">{user?.rol}</span>
+          <span className="tu-info">
+            <span className="tu-name">{user?.nombre?.split(' ')[0]}</span>
+            <span className="tu-role">{user?.rol}</span>
+          </span>
         </div>
       </div>
     </header>

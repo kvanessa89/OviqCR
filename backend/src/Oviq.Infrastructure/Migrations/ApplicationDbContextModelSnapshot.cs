@@ -799,6 +799,39 @@ namespace Oviq.Infrastructure.Migrations
                     b.ToTable("GastosProyecto");
                 });
 
+            modelBuilder.Entity("Oviq.Domain.Entities.Nota", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Completada")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreadoPorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModificadoPorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notas");
+                });
+
             modelBuilder.Entity("Oviq.Domain.Entities.OrdenCompra", b =>
                 {
                     b.Property<int>("Id")
@@ -968,6 +1001,9 @@ namespace Oviq.Infrastructure.Migrations
                     b.Property<DateTime?>("FechaFin")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("FechaFinalizado")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("FechaInicio")
                         .HasColumnType("timestamp with time zone");
 
@@ -1126,6 +1162,10 @@ namespace Oviq.Infrastructure.Migrations
 
                     b.Property<int?>("ModificadoPorId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("NotaPendiente")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<int>("NumeroSecuencial")
                         .HasColumnType("integer");

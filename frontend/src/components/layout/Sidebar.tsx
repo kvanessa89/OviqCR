@@ -10,7 +10,7 @@ interface NavItem {
 }
 
 const NAV_PRINCIPAL: NavItem[] = [
-  { label: 'Vista rápida', icon: 'fa-solid fa-gauge-high',    path: '/' },
+  { label: 'Vista rápida', icon: 'fa-solid fa-gauge-high',    path: '/', adminOnly: true },
 ];
 
 const NAV_GESTION: NavItem[] = [
@@ -82,8 +82,12 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
 
       {/* Navegación */}
       <nav className="nav">
-        <div className="nav-section">Principal</div>
-        {renderItems(NAV_PRINCIPAL)}
+        {NAV_PRINCIPAL.some(item => !item.adminOnly || isAdmin) && (
+          <>
+            <div className="nav-section">Principal</div>
+            {renderItems(NAV_PRINCIPAL)}
+          </>
+        )}
 
         <div className="nav-section">Gestión</div>
         {renderItems(NAV_GESTION)}

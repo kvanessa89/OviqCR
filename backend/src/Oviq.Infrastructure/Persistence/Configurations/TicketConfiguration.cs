@@ -11,6 +11,7 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
     {
         builder.Property(t => t.Codigo).IsRequired().HasMaxLength(20);
         builder.Property(t => t.Titulo).IsRequired().HasMaxLength(200);
+        builder.Property(t => t.NotaPendiente).HasMaxLength(1000);
 
         // El secuencial se reinicia por proyecto — esta es la regla a nivel de BD
         builder.HasIndex(t => new { t.ProyectoId, t.NumeroSecuencial }).IsUnique();

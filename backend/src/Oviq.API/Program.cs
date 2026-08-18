@@ -9,6 +9,7 @@ using Oviq.Application.Auth;
 using Oviq.Application.Catalogos;
 using Oviq.Application.Facturas;
 using Oviq.Application.Gastos;
+using Oviq.Application.Notas;
 using Oviq.Application.Pagos;
 using Oviq.Application.Clientes;
 using Oviq.Application.Clientes.Validators;
@@ -101,6 +102,7 @@ builder.Services.AddScoped<IFacturaService, FacturaService>();
 builder.Services.AddScoped<IGastoProyectoService, GastoProyectoService>();
 builder.Services.AddScoped<IPagoProyectoService, PagoProyectoService>();
 builder.Services.AddScoped<IProyectoResumenFinancieroService, ProyectoResumenFinancieroService>();
+builder.Services.AddScoped<INotaService, NotaService>();
 
 // ── Validadores (FluentValidation) ──────────────────────────────────
 builder.Services.AddValidatorsFromAssemblyContaining<CrearClienteValidator>();
@@ -142,7 +144,7 @@ var app = builder.Build();
 // El middleware de errores va primero, envuelve todo lo demás
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI();

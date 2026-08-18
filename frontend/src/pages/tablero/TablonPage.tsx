@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getTickets, cambiarEstadoTicket } from '../../api/tickets';
 import { getProyectos } from '../../api/proyectos';
 import { getUsuarios } from '../../api/usuarios';
 import { getCatalogo } from '../../api/catalogos';
 import { useAuth } from '../../context/AuthContext';
 import type { TicketDto, ProyectoDto, UsuarioDto, CatalogoDto } from '../../types';
+import NuevoTicketModal from '../proyectos/NuevoTicketModal';
 
 const ESTADO_COLORS: Record<string, string> = {
   por_hacer:    '#94A3B8',
@@ -46,6 +48,7 @@ function isOverdue(fecha?: string | null) {
 }
 
 export default function TablonPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [tickets, setTickets]   = useState<TicketDto[]>([]);
   const [estados, setEstados]   = useState<CatalogoDto[]>([]);
@@ -61,9 +64,14 @@ export default function TablonPage() {
   const [dragOverCod,   setDragOverCod]   = useState<string | null>(null);
   const [savingId,      setSavingId]      = useState<number | null>(null);
 
+  const [modalNuevoTicket, setModalNuevoTicket]     = useState(false);
+  const [estadoIdNuevo, setEstadoIdNuevo]           = useState<number | undefined>(undefined);
+  const [ticketSeleccionado, setTicketSeleccionado] = useState<TicketDto | null>(null);
+  const [estadoIdParaEdicion, setEstadoIdParaEdicion] = useState<number | undefined>(undefined);
+
   const codToId = Object.fromEntries(estados.map(e => [e.codigo, e.id]));
 
-  useEffect(() => {
+  const cargar = () =>
     Promise.all([getTickets(), getCatalogo('estados-ticket'), getProyectos(), getUsuarios()])
       .then(([t, e, p, u]) => {
         setTickets(t);
@@ -72,9 +80,14 @@ export default function TablonPage() {
         setUsuarios(u);
       })
       .finally(() => setLoading(false));
-  }, []);
+
+  useEffect(() => { cargar(); }, []);
+
+  const proyectosActivos = proyectos.filter(p => p.estadoCodigo !== 'finalizado');
+  const idsProyectosActivos = new Set(proyectosActivos.map(p => p.id));
 
   const filtrados = tickets.filter(t => {
+    if (!idsProyectosActivos.has(t.proyectoId)) return false;
     if (filtroProyecto && t.proyectoId !== filtroProyecto) return false;
     if (soloMios && t.usuarioId !== user?.usuarioId) return false;
     if (!soloMios && filtroUsuario) {
@@ -94,10 +107,19 @@ export default function TablonPage() {
     const newEstadoId = codToId[estadoCodigo];
     if (!newEstadoId) return;
 
-    const tid = draggingId;
-    setSavingId(tid);
     setDraggingId(null);
     setDragOverCod(null);
+
+    // "Pendiente" requiere justificación — se pide en el modal de edición
+    // en vez de aplicar el cambio directo.
+    if (estadoCodigo === 'pendiente') {
+      setEstadoIdParaEdicion(newEstadoId);
+      setTicketSeleccionado(ticket);
+      return;
+    }
+
+    const tid = ticket.id;
+    setSavingId(tid);
 
     try {
       await cambiarEstadoTicket(tid, newEstadoId);
@@ -110,6 +132,11 @@ export default function TablonPage() {
       setSavingId(null);
     }
   }
+
+  const abrirNuevoTicket = (estadoId?: number) => {
+    setEstadoIdNuevo(estadoId);
+    setModalNuevoTicket(true);
+  };
 
   if (loading) {
     return (
@@ -130,24 +157,35 @@ export default function TablonPage() {
     <div>
       <div className="page-head">
         <div className="ph-left">
+          <div className="crumb">
+            <span onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>Inicio</span>
+            <span className="sep">›</span>
+            <span>Tablero</span>
+          </div>
           <div className="page-title">Tablero</div>
           <div className="page-subtitle">Vista Kanban — arrastrá las tarjetas para cambiar el estado</div>
+        </div>
+        <div className="ph-right">
+          <button className="btn btn-primary btn-sm" onClick={() => abrirNuevoTicket()}>
+            <i className="fa-solid fa-plus"></i> Nuevo Ticket
+          </button>
         </div>
       </div>
 
       <div className="toolbar" style={{ marginBottom: 20 }}>
+        <span className="toolbar-title">Tablero · {filtrados.length} tickets</span>
         <select
-          className="filter-select"
+          className="select"
           value={filtroProyecto}
           onChange={e => setFiltroProyecto(e.target.value ? Number(e.target.value) : '')}
         >
           <option value="">Todos los proyectos</option>
-          {proyectos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+          {proyectosActivos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
         </select>
 
         {!soloMios && (
           <select
-            className="filter-select"
+            className="select"
             value={filtroUsuario}
             onChange={e => setFiltroUsuario(e.target.value !== '' ? Number(e.target.value) : '')}
           >
@@ -188,11 +226,14 @@ export default function TablonPage() {
                 <span className="kdot" style={{ background: color }} />
                 <span className="kcol-title">{estado.nombre}</span>
                 <span className="kcol-count">{colTickets.length}</span>
+                <button className="kcol-add" title="Nuevo ticket en este estado" onClick={() => abrirNuevoTicket(estado.id)}>
+                  <i className="fa-solid fa-plus"></i>
+                </button>
               </div>
 
               <div className={`kcol-body${isDragOver ? ' drag-over' : ''}`}>
                 {colTickets.length === 0 && !isDragOver && (
-                  <div className="kcol-empty">Sin tickets</div>
+                  <div className="kcol-empty">Arrastre aquí</div>
                 )}
                 {colTickets.map(ticket => (
                   <KCard
@@ -202,6 +243,7 @@ export default function TablonPage() {
                     isSaving={savingId === ticket.id}
                     onDragStart={() => setDraggingId(ticket.id)}
                     onDragEnd={() => { setDraggingId(null); setDragOverCod(null); }}
+                    onClick={() => { setEstadoIdParaEdicion(undefined); setTicketSeleccionado(ticket); }}
                   />
                 ))}
               </div>
@@ -209,6 +251,25 @@ export default function TablonPage() {
           );
         })}
       </div>
+
+      {modalNuevoTicket && (
+        <NuevoTicketModal
+          proyectos={proyectosActivos}
+          estadoIdInicial={estadoIdNuevo}
+          onClose={() => setModalNuevoTicket(false)}
+          onCreado={() => { setModalNuevoTicket(false); cargar(); }}
+        />
+      )}
+
+      {ticketSeleccionado && (
+        <NuevoTicketModal
+          proyectoId={ticketSeleccionado.proyectoId}
+          ticket={ticketSeleccionado}
+          estadoIdInicial={estadoIdParaEdicion}
+          onClose={() => { setTicketSeleccionado(null); setEstadoIdParaEdicion(undefined); }}
+          onCreado={() => { setTicketSeleccionado(null); setEstadoIdParaEdicion(undefined); cargar(); }}
+        />
+      )}
     </div>
   );
 }
@@ -219,9 +280,10 @@ interface KCardProps {
   isSaving: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
+  onClick: () => void;
 }
 
-function KCard({ ticket, isDragging, isSaving, onDragStart, onDragEnd }: KCardProps) {
+function KCard({ ticket, isDragging, isSaving, onDragStart, onDragEnd, onClick }: KCardProps) {
   const pc = prioridadColor(ticket.prioridadCodigo);
   const fechaVence = formatFecha(ticket.fechaFin);
   const vencido = isOverdue(ticket.fechaFin);
@@ -233,6 +295,7 @@ function KCard({ ticket, isDragging, isSaving, onDragStart, onDragEnd }: KCardPr
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
+      onClick={onClick}
     >
       <div className="kcard-top">
         <span className="kcard-code">{ticket.codigo}</span>
@@ -253,9 +316,11 @@ function KCard({ ticket, isDragging, isSaving, onDragStart, onDragEnd }: KCardPr
 
       <div className="kcard-title">{ticket.titulo}</div>
 
-      <div className="kcard-project">
-        <i className="fa-regular fa-folder" style={{ fontSize: 10 }} />
-        {ticket.proyectoNombre}
+      <div className="kcard-meta">
+        <span className="kcard-project">
+          <span className="pd" style={{ background: '#3B6EF5' }}></span>
+          {ticket.proyectoNombre}
+        </span>
       </div>
 
       <div className="kcard-foot">

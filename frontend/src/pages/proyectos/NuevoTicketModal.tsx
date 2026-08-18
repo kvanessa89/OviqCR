@@ -9,16 +9,19 @@ interface Props {
   proyectoId?: number;
   proyectos?: ProyectoDto[];
   ticket?: TicketDto;
+  estadoIdInicial?: number;
   onClose: () => void;
   onCreado: () => void;
 }
+
+const MENSAJE_NOTA_REQUERIDA = 'Debe justificar por qué el ticket pasa a estado Pendiente';
 
 function fmtFecha(iso: string) {
   const d = new Date(iso);
   return `${d.toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: '2-digit' })} · ${d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
-export default function NuevoTicketModal({ proyectoId, proyectos, ticket, onClose, onCreado }: Props) {
+export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estadoIdInicial, onClose, onCreado }: Props) {
   const { items: estados }     = useCatalogo('estados-ticket');
   const { items: prioridades } = useCatalogo('prioridades-ticket');
   const [usuarios, setUsuarios]       = useState<UsuarioDto[]>([]);
@@ -29,7 +32,8 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, onClos
   const [selectedProyectoId, setProy]   = useState('');
   const [usuarioId, setUsuarioId]       = useState(ticket?.usuarioId ? String(ticket.usuarioId) : '');
   const [prioridadId, setPrioridad]     = useState('');
-  const [estadoId, setEstado]           = useState('');
+  const [estadoId, setEstado]           = useState(estadoIdInicial ? String(estadoIdInicial) : '');
+  const [notaPendiente, setNotaPendiente] = useState(ticket?.notaPendiente ?? '');
   const [fechaInicio, setFI]            = useState(ticket?.fechaInicio?.slice(0, 10) ?? '');
   const [fechaFin, setFF]               = useState(ticket?.fechaFin?.slice(0, 10) ?? '');
   const [loading, setLoading]           = useState(false);
@@ -65,12 +69,20 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, onClos
     }
   }, [estados]);
 
+  const estadoSeleccionado = estados.find(e => String(e.id) === estadoId);
+  const esPendiente = estadoSeleccionado?.codigo === 'pendiente';
+
+  useEffect(() => {
+    if (!esPendiente) setError(prev => prev === MENSAJE_NOTA_REQUERIDA ? '' : prev);
+  }, [esPendiente]);
+
   const handleGuardar = async () => {
     if (!titulo.trim()) { setError('El título es requerido'); return; }
     if (!ticket && !proyectoId && !selectedProyectoId) { setError('Seleccione un proyecto'); return; }
     if (!usuarioId)     { setError('Seleccione a quién asignar el ticket'); return; }
     if (!prioridadId)   { setError('Seleccione una prioridad'); return; }
     if (!estadoId)      { setError('Seleccione un estado'); return; }
+    if (esPendiente && !notaPendiente.trim()) { setError(MENSAJE_NOTA_REQUERIDA); return; }
     if (fechaInicio && fechaFin && fechaFin < fechaInicio) { setError('La fecha fin debe ser mayor o igual a la fecha de inicio'); return; }
 
     setError('');
@@ -83,6 +95,7 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, onClos
           usuarioId: Number(usuarioId),
           prioridadId: Number(prioridadId),
           estadoId: Number(estadoId),
+          notaPendiente: esPendiente ? notaPendiente.trim() : undefined,
           fechaInicio: fechaInicio ? fechaInicio + 'T00:00:00.000Z' : undefined,
           fechaFin: fechaFin ? fechaFin + 'T00:00:00.000Z' : undefined,
         });
@@ -94,6 +107,7 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, onClos
           usuarioId: Number(usuarioId),
           prioridadId: Number(prioridadId),
           estadoId: Number(estadoId),
+          notaPendiente: esPendiente ? notaPendiente.trim() : undefined,
           fechaInicio: fechaInicio ? fechaInicio + 'T00:00:00.000Z' : undefined,
           fechaFin: fechaFin ? fechaFin + 'T00:00:00.000Z' : undefined,
         });
@@ -141,7 +155,12 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, onClos
             </div>
           )}
 
-          {!ticket && !proyectoId && proyectos && (
+          {ticket ? (
+            <div className="field">
+              <label>Proyecto</label>
+              <input className="input" value={ticket.proyectoNombre} disabled readOnly />
+            </div>
+          ) : !proyectoId && proyectos && (
             <div className="field">
               <label>Proyecto <span className="req">*</span></label>
               <select className="select" value={selectedProyectoId} onChange={e => setProy(e.target.value)}>
@@ -195,6 +214,18 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, onClos
               <input className="input" type="date" value={fechaInicio} onChange={e => setFI(e.target.value)} />
             </div>
           </div>
+
+          {esPendiente && (
+            <div className="field">
+              <label>Nota <span className="req">*</span></label>
+              <textarea
+                className="textarea"
+                placeholder="Justifique por qué el ticket pasa a estado Pendiente"
+                value={notaPendiente}
+                onChange={e => setNotaPendiente(e.target.value)}
+              />
+            </div>
+          )}
 
           <div className="field">
             <label>Fecha fin</label>

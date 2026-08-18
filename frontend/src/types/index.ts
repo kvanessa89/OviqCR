@@ -49,6 +49,7 @@ export interface ProyectoDto {
   estadoNombre: string;
   fechaInicio?: string;
   fechaFin?: string;
+  fechaFinalizado?: string;
   descripcion?: string;
   ordenCompra?: OrdenCompraDto;
   cantidadFacturasEmitidas: number;
@@ -82,6 +83,7 @@ export interface TicketDto {
   prioridadNombre: string;
   estadoCodigo: string;
   estadoNombre: string;
+  notaPendiente?: string;
   fechaInicio?: string;
   fechaFin?: string;
 }
@@ -93,6 +95,15 @@ export interface UsuarioDto {
   rol: string;
   activo: boolean;
   perfilTrabajador?: PerfilTrabajadorDto;
+}
+
+export interface NotaDto {
+  id: number;
+  descripcion: string;
+  completada: boolean;
+  creadoPorId?: number;
+  creadoPorNombre: string;
+  creadoEn: string;
 }
 
 export interface PerfilTrabajadorDto {

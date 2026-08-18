@@ -9,6 +9,6 @@ public interface IProyectoService
     Task<ProyectoDto> CrearAsync(CrearProyectoDto dto, CancellationToken cancellationToken = default);
     Task ActualizarAsync(int id, ActualizarProyectoDto dto, CancellationToken cancellationToken = default);
 
-    Task MarcarFinalizadoAsync(int id, CancellationToken cancellationToken = default);
+    Task MarcarFinalizadoAsync(int id, MarcarFinalizadoDto dto, CancellationToken cancellationToken = default);
     Task EliminarAsync(int id, CancellationToken cancellationToken = default);
 }

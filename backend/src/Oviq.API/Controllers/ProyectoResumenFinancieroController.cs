@@ -39,4 +39,11 @@ public class ProyectoResumenFinancieroController : ControllerBase
         await _service.RegistrarPagoClienteAsync(proyectoId, dto, ct);
         return NoContent();
     }
+
+    [HttpGet("api/proyectos/resumen-mensual")]
+    public async Task<IActionResult> ObtenerResumenMensual([FromQuery] int anio, [FromQuery] int mes, CancellationToken ct)
+    {
+        var resumen = await _service.ObtenerResumenMensualAsync(anio, mes, ct);
+        return Ok(resumen);
+    }
 }

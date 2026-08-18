@@ -23,6 +23,11 @@ public class Proyecto : BaseEntity
     public DateTime? FechaFin { get; set; }
     public string? Descripcion { get; set; }
 
+    // Se setea una única vez, la primera vez que el proyecto pasa a "finalizado"
+    // (ver ProyectoService.MarcarFinalizadoAsync) — a diferencia de FechaFin
+    // (estimada, editable a mano), esta es la fecha real de finalización.
+    public DateTime? FechaFinalizado { get; set; }
+
     public bool RequiereFactura { get; set; } = true;
     public decimal? PresupuestoInicial { get; set; }
 

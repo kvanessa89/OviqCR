@@ -20,8 +20,8 @@ export const actualizarProyecto = async (id: number, dto: ActualizarProyectoPayl
   await api.put(`/Proyectos/${id}`, dto);
 };
 
-export const marcarFinalizado = async (id: number): Promise<void> => {
-  await api.post(`/Proyectos/${id}/marcar-finalizado`);
+export const marcarFinalizado = async (id: number, montoTotal?: number): Promise<void> => {
+  await api.post(`/Proyectos/${id}/marcar-finalizado`, { montoTotal });
 };
 
 export const eliminarProyecto = async (id: number): Promise<void> => {
@@ -52,6 +52,23 @@ export const guardarResumenFinanciero = async (
 
 export const registrarPagoCliente = async (proyectoId: number, monto: number): Promise<void> => {
   await api.post(`/proyectos/${proyectoId}/registrar-pago-cliente`, { monto });
+};
+
+export interface ResumenMensualDto {
+  proyectosFacturados: number;
+  cantidadFacturasEmitidas: number;
+  proyectosSinFactura: number;
+  cantidadProyectosSinFactura: number;
+  pagado: number;
+  pendienteDeCobro: number;
+  iva: number;
+  gastosProyectos: number;
+  ganancia: number;
+}
+
+export const getResumenMensual = async (anio: number, mes: number): Promise<ResumenMensualDto> => {
+  const res = await api.get<ResumenMensualDto>('/proyectos/resumen-mensual', { params: { anio, mes } });
+  return res.data;
 };
 
 export interface OrdenCompraPayload {

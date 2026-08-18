@@ -30,6 +30,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<ComentarioProyecto> Comentarios => Set<ComentarioProyecto>();
     public DbSet<PerfilTrabajador> PerfilesTrabajador => Set<PerfilTrabajador>();
     public DbSet<Factura> Facturas => Set<Factura>();
+    public DbSet<Nota> Notas => Set<Nota>();
 
     // Catálogos
     public DbSet<EstadoCliente> EstadosCliente => Set<EstadoCliente>();

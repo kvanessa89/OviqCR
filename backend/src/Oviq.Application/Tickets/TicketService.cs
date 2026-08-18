@@ -63,6 +63,7 @@ public class TicketService : ITicketService
             UsuarioId = dto.UsuarioId,
             PrioridadId = dto.PrioridadId,
             EstadoId = dto.EstadoId,
+            NotaPendiente = dto.NotaPendiente,
             FechaInicio = dto.FechaInicio,
             FechaFin = dto.FechaFin
         };
@@ -83,6 +84,7 @@ public class TicketService : ITicketService
         ticket.UsuarioId = dto.UsuarioId;
         ticket.PrioridadId = dto.PrioridadId;
         ticket.EstadoId = dto.EstadoId;
+        ticket.NotaPendiente = dto.NotaPendiente;
         ticket.FechaInicio = dto.FechaInicio;
         ticket.FechaFin = dto.FechaFin;
 
@@ -135,6 +137,7 @@ public class TicketService : ITicketService
             PrioridadNombre = t.Prioridad.Nombre,
             EstadoCodigo = t.Estado.Codigo,
             EstadoNombre = t.Estado.Nombre,
+            NotaPendiente = t.NotaPendiente,
             FechaInicio = t.FechaInicio,
             FechaFin = t.FechaFin
         }).ToList();

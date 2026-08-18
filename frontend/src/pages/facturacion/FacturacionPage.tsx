@@ -23,13 +23,14 @@ function fmtMoney(monto: number, codigo: string) {
   return `${sym}${s}`;
 }
 
+const FACTURA_ESTADO_STYLES: Record<string, { bg: string; color: string; icon: string }> = {
+  emitida: { bg: 'rgba(245,158,11,0.14)', color: '#B45309', icon: 'fa-paper-plane' },
+  pagada:  { bg: 'rgba(16,185,129,0.12)',  color: '#047857', icon: 'fa-circle-check' },
+  vencida: { bg: 'rgba(239,68,68,0.12)',   color: '#B91C1C', icon: 'fa-triangle-exclamation' },
+};
+
 function InvStatusPill({ codigo, nombre }: { codigo: string; nombre: string }) {
-  const map: Record<string, { bg: string; color: string; icon: string }> = {
-    emitida: { bg: 'rgba(245,158,11,0.14)', color: '#B45309', icon: 'fa-paper-plane' },
-    pagada:  { bg: 'rgba(16,185,129,0.12)',  color: '#047857', icon: 'fa-circle-check' },
-    vencida: { bg: 'rgba(239,68,68,0.12)',   color: '#B91C1C', icon: 'fa-triangle-exclamation' },
-  };
-  const c = map[codigo] ?? map['emitida'];
+  const c = FACTURA_ESTADO_STYLES[codigo] ?? FACTURA_ESTADO_STYLES['emitida'];
   return (
     <span style={{ background: c.bg, color: c.color, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 99 }}>
       <i className={`fa-solid ${c.icon}`} style={{ fontSize: 10 }}></i>{nombre}
@@ -202,49 +203,89 @@ export default function FacturacionPage() {
           <div>Ajustá los filtros o creá una nueva factura.</div>
         </div>
       ) : (
-        <div className="tlist inv-list">
-          <div className="inv-head">
-            <div>Número</div>
-            <div>Cliente</div>
-            <div>Proyecto</div>
-            <div>Emisión</div>
-            <div>Fecha est. pago</div>
-            <div>Monto</div>
-            <div>Estado</div>
-            <div></div>
-          </div>
-          {filtradas.map(f => (
-            <div key={f.id} className="inv-row" onClick={() => setFacturaEditar(f)}>
-              <div style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, fontWeight: 700, color: 'var(--text-1)' }}>{f.numero}</div>
-              <div>
-                <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--text-1)' }}>{f.clienteNombre}</div>
-                {f.subcuentaNombre && <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{f.subcuentaNombre}</div>}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="fa-solid fa-diagram-project" style={{ fontSize: 11, color: '#3B6EF5', flexShrink: 0 }}></i>
-                <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{f.proyectoNombre}</span>
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{fmtFecha(f.fechaEmision)}</div>
-              <div style={{ fontSize: 13, color: f.estaVencida ? 'var(--danger)' : 'var(--text-2)', fontWeight: f.estaVencida ? 700 : 400 }}>
-                {fmtFecha(f.fechaEstimadaPago)}{f.estaVencida && <> <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: 10 }}></i></>}
-              </div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>
-                {fmtMoney(f.monto, f.monedaCodigo)}
-              </div>
-              <div><InvStatusPill codigo={f.estadoCodigo} nombre={f.estadoNombre} /></div>
-              <div style={{ display: 'flex', gap: 5, justifyContent: 'flex-end' }}>
-                {f.archivoUrl && (
-                  <a href={`${API_BASE}${f.archivoUrl}`} target="_blank" rel="noreferrer" className="row-edit-btn" title="Ver archivo" onClick={e => e.stopPropagation()}>
-                    <i className="fa-solid fa-file-pdf"></i>
-                  </a>
-                )}
-                <button className="cc-menu cc-menu-danger" title="Eliminar" onClick={e => handleEliminar(f, e)}>
-                  <i className="fa-solid fa-trash"></i>
-                </button>
-              </div>
+        <>
+          <div className="tlist inv-list inv-list-desktop">
+            <div className="inv-head">
+              <div>Número</div>
+              <div>Cliente</div>
+              <div>Proyecto</div>
+              <div>Emisión</div>
+              <div>Fecha est. pago</div>
+              <div>Monto</div>
+              <div>Estado</div>
+              <div></div>
             </div>
-          ))}
-        </div>
+            {filtradas.map(f => (
+              <div key={f.id} className="inv-row" onClick={() => setFacturaEditar(f)}>
+                <div style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, fontWeight: 700, color: 'var(--text-1)' }}>{f.numero}</div>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--text-1)' }}>{f.clienteNombre}</div>
+                  {f.subcuentaNombre && <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{f.subcuentaNombre}</div>}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <i className="fa-solid fa-diagram-project" style={{ fontSize: 11, color: '#3B6EF5', flexShrink: 0 }}></i>
+                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{f.proyectoNombre}</span>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{fmtFecha(f.fechaEmision)}</div>
+                <div style={{ fontSize: 13, color: f.estaVencida ? 'var(--danger)' : 'var(--text-2)', fontWeight: f.estaVencida ? 700 : 400 }}>
+                  {fmtFecha(f.fechaEstimadaPago)}{f.estaVencida && <> <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: 10 }}></i></>}
+                </div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>
+                  {fmtMoney(f.monto, f.monedaCodigo)}
+                </div>
+                <div><InvStatusPill codigo={f.estadoCodigo} nombre={f.estadoNombre} /></div>
+                <div style={{ display: 'flex', gap: 5, justifyContent: 'flex-end' }}>
+                  {f.archivoUrl && (
+                    <a href={`${API_BASE}${f.archivoUrl}`} target="_blank" rel="noreferrer" className="row-edit-btn" title="Ver archivo" onClick={e => e.stopPropagation()}>
+                      <i className="fa-solid fa-file-pdf"></i>
+                    </a>
+                  )}
+                  <button className="cc-menu cc-menu-danger" title="Eliminar" onClick={e => handleEliminar(f, e)}>
+                    <i className="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="fcm-list">
+            {filtradas.map(f => {
+              const c = FACTURA_ESTADO_STYLES[f.estadoCodigo] ?? FACTURA_ESTADO_STYLES['emitida'];
+              return (
+                <div key={f.id} className={`fcm-card${f.estaVencida ? ' atrasado' : ''}`} onClick={() => setFacturaEditar(f)}>
+                  <div className="fcm-top">
+                    <div className="fcm-header">
+                      <div style={{ minWidth: 0 }}>
+                        <div className="fcm-num">{f.numero}</div>
+                        <div className="fcm-amount" style={f.estaVencida ? { color: 'var(--danger)' } : undefined}>{fmtMoney(f.monto, f.monedaCodigo)}</div>
+                      </div>
+                      <div className="fcm-header-right">
+                        <InvStatusPill codigo={f.estadoCodigo} nombre={f.estadoNombre} />
+                        <button className="fcm-trash" title="Eliminar" onClick={e => handleEliminar(f, e)}>
+                          <i className="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="fcm-client">{f.clienteNombre}{f.subcuentaNombre ? ` · ${f.subcuentaNombre}` : ''}</div>
+                    <div className="fcm-project">
+                      <span className="fcm-dot"></span>
+                      {f.proyectoNombre}
+                    </div>
+                  </div>
+                  <div className="fcm-bottom">
+                    <div className="fcm-dates">
+                      <span>Emitida: {fmtFecha(f.fechaEmision)}</span>
+                      <span className="fcm-vence" style={{ color: f.estaVencida ? 'var(--danger)' : 'var(--text-2)' }}>
+                        Vence: {fmtFecha(f.fechaEstimadaPago)}{f.estaVencida && ' ⚠'}
+                      </span>
+                    </div>
+                    <i className={`fa-solid ${c.icon}`} style={{ fontSize: 18, color: c.color }}></i>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {modalNueva && (

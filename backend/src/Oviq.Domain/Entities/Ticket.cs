@@ -28,6 +28,9 @@ public class Ticket : BaseEntity
     public int EstadoId { get; set; }
     public EstadoTicket Estado { get; set; } = null!;
 
+    // Justificación requerida cuando Estado.Codigo == "pendiente"
+    public string? NotaPendiente { get; set; }
+
     public DateTime? FechaInicio { get; set; }
     public DateTime? FechaFin { get; set; }
 

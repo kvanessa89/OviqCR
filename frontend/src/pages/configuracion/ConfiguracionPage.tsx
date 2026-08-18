@@ -74,7 +74,7 @@ const SECCIONES: Seccion[] = [
     titulo: 'Usuarios',
     icono: 'fa-solid fa-users',
     catalogos: [
-      { id: 'roles',      label: 'Roles',          icon: 'fa-solid fa-shield-halved',       iconColor: '#7C3AED' },
+      { id: 'roles',      label: 'Roles',          icon: 'fa-solid fa-shield-halved',       iconColor: '#7C3AED', soloLectura: true },
       { id: 'cargos',     label: 'Cargos',          icon: 'fa-solid fa-hard-hat',            iconColor: '#F97316' },
       { id: 'formas-pago', label: 'Formas de pago', icon: 'fa-solid fa-hand-holding-dollar', iconColor: '#EC4899' },
     ],

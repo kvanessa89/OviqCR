@@ -47,7 +47,7 @@ export default function LoginPage() {
           </div>
 
           <div className="login-title">Iniciar sesión</div>
-          <div className="login-sub">Ingresá tus credenciales para continuar</div>
+          <div className="login-sub">Ingrese sus credenciales para continuar</div>
 
           {error && (
             <div style={{
@@ -66,7 +66,7 @@ export default function LoginPage() {
                 <i className="fa-regular fa-envelope"></i>
                 <input
                   type="email"
-                  placeholder="usuario@oviq.com"
+                  placeholder=""
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required

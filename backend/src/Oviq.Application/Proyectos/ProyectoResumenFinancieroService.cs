@@ -52,8 +52,6 @@ public class ProyectoResumenFinancieroService : IProyectoResumenFinancieroServic
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        await ActualizarEstadoFinancieroPendientePagoAsync(proyectoId, cancellationToken);
-
         return MapToDto(resumen);
     }
 
@@ -95,21 +93,71 @@ public class ProyectoResumenFinancieroService : IProyectoResumenFinancieroServic
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task ActualizarEstadoFinancieroPendientePagoAsync(int proyectoId, CancellationToken cancellationToken)
+    public async Task<ResumenMensualDto> ObtenerResumenMensualAsync(int anio, int mes, CancellationToken cancellationToken = default)
     {
-        var proyecto = await _context.Proyectos
-            .Include(p => p.EstadoFinanciero)
-            .FirstOrDefaultAsync(p => p.Id == proyectoId, cancellationToken);
+        var inicioMes = new DateTime(anio, mes, 1, 0, 0, 0, DateTimeKind.Utc);
+        var inicioMesSiguiente = inicioMes.AddMonths(1);
 
-        if (proyecto is null || proyecto.EstadoFinanciero?.Codigo != "pendiente_de_cobro") return;
+        // Proyectos facturados: monto de todas las facturas (CRC) emitidas en el mes,
+        // sin importar si ya se pagaron o no.
+        var facturasDelMes = await _context.Facturas
+            .Include(f => f.Moneda)
+            .Include(f => f.Estado)
+            .Where(f => f.Moneda.Codigo == "CRC"
+                     && f.FechaEmision >= inicioMes
+                     && f.FechaEmision < inicioMesSiguiente)
+            .ToListAsync(cancellationToken);
 
-        var estadoPendientePago = await _context.EstadosFinancieroProyecto
-            .FirstOrDefaultAsync(e => e.Codigo == "pendiente_de_pago", cancellationToken);
+        var proyectosFacturados = facturasDelMes.Sum(f => f.Monto);
+        var pagadoFacturado = facturasDelMes.Where(f => f.Estado.Codigo == "pagada").Sum(f => f.Monto);
+        var iva = facturasDelMes.Where(f => !f.SinIva).Sum(f => f.Monto * 0.13m);
 
-        if (estadoPendientePago is null) return;
+        // Proyectos sin factura: monto total (ProyectoResumenFinanciero.TotalFacturado)
+        // de los proyectos que no requieren factura y se finalizaron en el mes consultado.
+        var proyectosSinFacturaIds = await _context.Proyectos
+            .Where(p => !p.RequiereFactura
+                     && p.FechaFinalizado != null
+                     && p.FechaFinalizado >= inicioMes
+                     && p.FechaFinalizado < inicioMesSiguiente)
+            .Select(p => p.Id)
+            .ToListAsync(cancellationToken);
 
-        proyecto.EstadoFinancieroId = estadoPendientePago.Id;
-        await _context.SaveChangesAsync(cancellationToken);
+        var proyectosSinFactura = await _context.ProyectosResumenFinanciero
+            .Where(r => proyectosSinFacturaIds.Contains(r.ProyectoId))
+            .SumAsync(r => r.TotalFacturado, cancellationToken);
+
+        var pagadoSinFactura = await _context.PagosProyecto
+            .Where(p => proyectosSinFacturaIds.Contains(p.ProyectoId))
+            .SumAsync(p => p.Monto, cancellationToken);
+
+        var pagado = pagadoFacturado + pagadoSinFactura;
+        var pendienteDeCobro = Math.Max(0, (proyectosFacturados + proyectosSinFactura) - pagado);
+
+        // Gastos de los proyectos facturados (según sus facturas emitidas este mes) y de
+        // los proyectos sin factura finalizados este mes.
+        var idsParaGastos = facturasDelMes.Select(f => f.ProyectoId)
+            .Concat(proyectosSinFacturaIds)
+            .Distinct()
+            .ToList();
+
+        var gastosProyectos = await _context.GastosProyecto
+            .Where(g => idsParaGastos.Contains(g.ProyectoId))
+            .SumAsync(g => g.Monto, cancellationToken);
+
+        var ganancia = proyectosFacturados + proyectosSinFactura - iva - gastosProyectos;
+
+        return new ResumenMensualDto
+        {
+            ProyectosFacturados = proyectosFacturados,
+            CantidadFacturasEmitidas = facturasDelMes.Count,
+            ProyectosSinFactura = proyectosSinFactura,
+            CantidadProyectosSinFactura = proyectosSinFacturaIds.Count,
+            Pagado = pagado,
+            PendienteDeCobro = pendienteDeCobro,
+            Iva = iva,
+            GastosProyectos = gastosProyectos,
+            Ganancia = ganancia,
+        };
     }
 
     private static ProyectoResumenFinancieroDto MapToDto(ProyectoResumenFinanciero r, decimal totalPagado = 0) => new()
