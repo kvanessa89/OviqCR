@@ -86,6 +86,14 @@ export default function TablonPage() {
   const proyectosActivos = proyectos.filter(p => p.estadoCodigo !== 'finalizado');
   const idsProyectosActivos = new Set(proyectosActivos.map(p => p.id));
 
+  // Un Trabajador ve en el tablero los tickets de todo el proyecto (aunque no
+  // le pertenezcan) si tiene al menos uno asignado — pero en este dropdown
+  // solo debe poder filtrar por los proyectos donde tiene un ticket propio.
+  const esAdmin = user?.rol === 'Administrador';
+  const proyectosDropdown = esAdmin
+    ? proyectosActivos
+    : proyectosActivos.filter(p => tickets.some(t => t.proyectoId === p.id && t.usuarioId === user?.usuarioId));
+
   const filtrados = tickets.filter(t => {
     if (!idsProyectosActivos.has(t.proyectoId)) return false;
     if (filtroProyecto && t.proyectoId !== filtroProyecto) return false;
@@ -180,7 +188,7 @@ export default function TablonPage() {
           onChange={e => setFiltroProyecto(e.target.value ? Number(e.target.value) : '')}
         >
           <option value="">Todos los proyectos</option>
-          {proyectosActivos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+          {proyectosDropdown.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
         </select>
 
         {!soloMios && (

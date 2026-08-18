@@ -8,7 +8,10 @@ namespace Oviq.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Administrador")] // solo el Administrador gestiona usuarios
+// La lectura queda abierta a cualquier rol autenticado — Trabajador la necesita
+// para el selector de "asignado a" al crear/editar tickets (Tickets, Tablero,
+// NuevoTicketModal). Crear/editar usuarios sigue siendo exclusivo de Administrador.
+[Authorize]
 public class UsuariosController : ControllerBase
 {
     private readonly IUsuarioService _usuarioService;
@@ -39,6 +42,7 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Administrador")]
     public async Task<ActionResult<UsuarioDto>> Crear(CrearUsuarioDto dto, CancellationToken cancellationToken)
     {
         await _crearValidator.ValidateAndThrowAsync(dto, cancellationToken);
@@ -47,6 +51,7 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> Actualizar(int id, ActualizarUsuarioDto dto, CancellationToken cancellationToken)
     {
         await _actualizarValidator.ValidateAndThrowAsync(dto, cancellationToken);

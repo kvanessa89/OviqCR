@@ -15,7 +15,7 @@ const NAV_PRINCIPAL: NavItem[] = [
 
 const NAV_GESTION: NavItem[] = [
   { label: 'Clientes',     icon: 'fa-solid fa-building-user', path: '/clientes',   adminOnly: true },
-  { label: 'Proyectos',    icon: 'fa-solid fa-diagram-project',path: '/proyectos' },
+  { label: 'Proyectos',    icon: 'fa-solid fa-diagram-project',path: '/proyectos', adminOnly: true },
   { label: 'Tickets',      icon: 'fa-solid fa-ticket',         path: '/tickets' },
   { label: 'Tablero',      icon: 'fa-solid fa-columns',        path: '/tablero' },
   { label: 'Calendario',   icon: 'fa-solid fa-calendar-days',  path: '/calendario' },

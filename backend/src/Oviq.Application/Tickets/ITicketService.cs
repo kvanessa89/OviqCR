@@ -4,9 +4,10 @@ namespace Oviq.Application.Tickets;
 
 public interface ITicketService
 {
-    Task<List<TicketDto>> ObtenerTodosAsync(CancellationToken cancellationToken = default);
-    Task<List<TicketDto>> ObtenerPorProyectoAsync(int proyectoId, CancellationToken cancellationToken = default);
+    Task<List<TicketDto>> ObtenerTodosAsync(int? usuarioIdAsignado = null, CancellationToken cancellationToken = default);
+    Task<List<TicketDto>> ObtenerPorProyectoAsync(int proyectoId, int? usuarioIdAsignado = null, CancellationToken cancellationToken = default);
     Task<TicketDto?> ObtenerPorIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<bool> TieneAccesoAlProyectoAsync(int usuarioId, int proyectoId, CancellationToken cancellationToken = default);
     Task<TicketDto> CrearAsync(CrearTicketDto dto, CancellationToken cancellationToken = default);
     Task ActualizarAsync(int id, ActualizarTicketDto dto, CancellationToken cancellationToken = default);
     Task CambiarEstadoAsync(int id, int estadoId, CancellationToken cancellationToken = default);

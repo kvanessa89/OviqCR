@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Oviq.Application.Common.Interfaces;
 using Oviq.Application.Tickets;
 using Oviq.Application.Tickets.Dtos;
 
@@ -12,36 +13,53 @@ namespace Oviq.API.Controllers;
 public class TicketsController : ControllerBase
 {
     private readonly ITicketService _ticketService;
+    private readonly ICurrentUserService _currentUser;
     private readonly IValidator<CrearTicketDto> _crearValidator;
     private readonly IValidator<ActualizarTicketDto> _actualizarValidator;
 
     public TicketsController(
         ITicketService ticketService,
+        ICurrentUserService currentUser,
         IValidator<CrearTicketDto> crearValidator,
         IValidator<ActualizarTicketDto> actualizarValidator)
     {
         _ticketService = ticketService;
+        _currentUser = currentUser;
         _crearValidator = crearValidator;
         _actualizarValidator = actualizarValidator;
     }
 
+    // Un Trabajador ve todos los tickets de los proyectos donde tiene al menos
+    // un ticket asignado (no solo los suyos) — tablero, listado y calendario
+    // comparten este endpoint. Un Administrador ve todos.
+    private int? UsuarioIdFiltro => User.IsInRole("Trabajador") ? _currentUser.UsuarioId : null;
+
     [HttpGet]
     public async Task<ActionResult<List<TicketDto>>> ObtenerTodos(CancellationToken cancellationToken)
     {
-        return Ok(await _ticketService.ObtenerTodosAsync(cancellationToken));
+        return Ok(await _ticketService.ObtenerTodosAsync(UsuarioIdFiltro, cancellationToken));
     }
 
     [HttpGet("proyecto/{proyectoId}")]
     public async Task<ActionResult<List<TicketDto>>> ObtenerPorProyecto(int proyectoId, CancellationToken cancellationToken)
     {
-        return Ok(await _ticketService.ObtenerPorProyectoAsync(proyectoId, cancellationToken));
+        return Ok(await _ticketService.ObtenerPorProyectoAsync(proyectoId, UsuarioIdFiltro, cancellationToken));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<TicketDto>> ObtenerPorId(int id, CancellationToken cancellationToken)
     {
         var ticket = await _ticketService.ObtenerPorIdAsync(id, cancellationToken);
-        return ticket is null ? NotFound() : Ok(ticket);
+        if (ticket is null) return NotFound();
+
+        if (User.IsInRole("Trabajador"))
+        {
+            var usuarioId = _currentUser.UsuarioId;
+            if (usuarioId is null || !await _ticketService.TieneAccesoAlProyectoAsync(usuarioId.Value, ticket.ProyectoId, cancellationToken))
+                return NotFound();
+        }
+
+        return Ok(ticket);
     }
 
     [HttpPost]

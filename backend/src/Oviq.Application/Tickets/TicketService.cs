@@ -18,14 +18,27 @@ public class TicketService : ITicketService
         _usuarioLookup = usuarioLookup;
     }
 
-    public async Task<List<TicketDto>> ObtenerTodosAsync(CancellationToken cancellationToken = default)
+    // Un Trabajador con al menos un ticket asignado en un proyecto ve TODOS los
+    // tickets de ese proyecto (no solo los suyos) — el filtro es por proyecto,
+    // no por ticket individual.
+    public async Task<List<TicketDto>> ObtenerTodosAsync(int? usuarioIdAsignado = null, CancellationToken cancellationToken = default)
     {
-        var tickets = await ConsultaBase().ToListAsync(cancellationToken);
+        var consulta = ConsultaBase();
+        if (usuarioIdAsignado.HasValue)
+        {
+            var proyectoIds = await ProyectosConAccesoAsync(usuarioIdAsignado.Value, cancellationToken);
+            consulta = consulta.Where(t => proyectoIds.Contains(t.ProyectoId));
+        }
+
+        var tickets = await consulta.ToListAsync(cancellationToken);
         return await MapToDtosAsync(tickets, cancellationToken);
     }
 
-    public async Task<List<TicketDto>> ObtenerPorProyectoAsync(int proyectoId, CancellationToken cancellationToken = default)
+    public async Task<List<TicketDto>> ObtenerPorProyectoAsync(int proyectoId, int? usuarioIdAsignado = null, CancellationToken cancellationToken = default)
     {
+        if (usuarioIdAsignado.HasValue && !await TieneAccesoAlProyectoAsync(usuarioIdAsignado.Value, proyectoId, cancellationToken))
+            return new List<TicketDto>();
+
         var tickets = await ConsultaBase().Where(t => t.ProyectoId == proyectoId).ToListAsync(cancellationToken);
         return await MapToDtosAsync(tickets, cancellationToken);
     }
@@ -38,6 +51,16 @@ public class TicketService : ITicketService
         var dtos = await MapToDtosAsync(new List<Ticket> { ticket }, cancellationToken);
         return dtos[0];
     }
+
+    public Task<bool> TieneAccesoAlProyectoAsync(int usuarioId, int proyectoId, CancellationToken cancellationToken = default) =>
+        _context.Tickets.AnyAsync(t => t.ProyectoId == proyectoId && t.UsuarioId == usuarioId, cancellationToken);
+
+    private Task<List<int>> ProyectosConAccesoAsync(int usuarioId, CancellationToken cancellationToken) =>
+        _context.Tickets
+            .Where(t => t.UsuarioId == usuarioId)
+            .Select(t => t.ProyectoId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
 
     public async Task<TicketDto> CrearAsync(CrearTicketDto dto, CancellationToken cancellationToken = default)
     {

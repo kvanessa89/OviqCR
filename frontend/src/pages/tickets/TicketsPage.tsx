@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { getTickets, eliminarTicket } from '../../api/tickets';
 import { getProyectos } from '../../api/proyectos';
 import { getUsuarios } from '../../api/usuarios';
@@ -40,6 +41,7 @@ function fmtFechaCorta(iso?: string) {
 
 export default function TicketsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [tickets, setTickets]     = useState<TicketDto[]>([]);
   const [proyectos, setProyectos] = useState<ProyectoDto[]>([]);
   const [usuarios, setUsuarios]   = useState<UsuarioDto[]>([]);
@@ -69,6 +71,18 @@ export default function TicketsPage() {
       .finally(() => setLoading(false));
 
   useEffect(() => { cargar(); }, []);
+
+  // Un Trabajador ve en la lista los tickets de todo el proyecto (aunque no le
+  // pertenezcan) si tiene al menos uno asignado — pero en este dropdown solo
+  // debe poder filtrar por los proyectos donde tiene un ticket propio.
+  const esAdmin = user?.rol === 'Administrador';
+  const proyectosDropdown = useMemo(() => {
+    if (esAdmin) return proyectos;
+    const idsConTicketPropio = new Set(
+      tickets.filter(t => t.usuarioId === user?.usuarioId).map(t => t.proyectoId)
+    );
+    return proyectos.filter(p => idsConTicketPropio.has(p.id));
+  }, [esAdmin, proyectos, tickets, user?.usuarioId]);
 
   const filtrados = tickets.filter(t => {
     if (busqueda && !(t.titulo + t.codigo).toLowerCase().includes(busqueda.toLowerCase())) return false;
@@ -177,7 +191,7 @@ export default function TicketsPage() {
         <div className="desktop-filters" style={{ display: 'contents' }}>
           <select className="select" value={filtroProyecto} onChange={e => setFP(e.target.value)}>
             <option value="">Todos los proyectos</option>
-            {proyectos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+            {proyectosDropdown.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
           </select>
           <select className="select" value={filtroEstado} onChange={e => setFE(e.target.value)}>
             <option value="">Todos los estados</option>

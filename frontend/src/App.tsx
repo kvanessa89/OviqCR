@@ -19,10 +19,17 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 // La Vista rápida es solo para Administradores — un Trabajador que llegue a "/"
-// (por login, o escribiendo la URL a mano) va directo a Proyectos.
+// (por login, o escribiendo la URL a mano) va directo a Tickets.
 function HomeRoute() {
   const { user } = useAuth();
-  return user?.rol === 'Administrador' ? <DashboardPage /> : <Navigate to="/proyectos" replace />;
+  return user?.rol === 'Administrador' ? <DashboardPage /> : <Navigate to="/tickets" replace />;
+}
+
+// Proyectos es una sección exclusiva de Administrador — un Trabajador que
+// escriba la URL a mano va directo a Tickets, igual que HomeRoute.
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  return user?.rol === 'Administrador' ? <>{children}</> : <Navigate to="/tickets" replace />;
 }
 
 export default function App() {
@@ -47,8 +54,8 @@ export default function App() {
       >
         <Route index element={<HomeRoute />} />
         <Route path="clientes" element={<ClientesPage />} />
-        <Route path="proyectos"    element={<ProyectosPage />} />
-        <Route path="proyectos/:id" element={<ProyectoDetallePage />} />
+        <Route path="proyectos"    element={<AdminRoute><ProyectosPage /></AdminRoute>} />
+        <Route path="proyectos/:id" element={<AdminRoute><ProyectoDetallePage /></AdminRoute>} />
         <Route path="tickets"      element={<TicketsPage />} />
         <Route path="tablero"      element={<TablonPage />} />
         <Route path="calendario"   element={<CalendarioPage />} />
