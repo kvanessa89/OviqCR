@@ -59,6 +59,20 @@ public class UsuariosController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Eliminar(
+        int id,
+        [FromServices] Oviq.Application.Common.Interfaces.ICurrentUserService currentUser,
+        CancellationToken cancellationToken)
+    {
+        if (currentUser.UsuarioId == id)
+            return BadRequest(new { mensaje = "No podés eliminar tu propio usuario." });
+
+        await _usuarioService.EliminarAsync(id, cancellationToken);
+        return NoContent();
+    }
+
     // Endpoint útil para que el Trabajador vea/edite su propia info sin
     // necesitar conocer su Id — lo saca del JWT vía ICurrentUserService.
     [HttpGet("me")]

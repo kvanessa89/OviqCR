@@ -34,6 +34,7 @@ public class GastoProyectoService : IGastoProyectoService
             ProyectoId = proyectoId,
             Rubro      = dto.Rubro.Trim(),
             Monto      = dto.Monto,
+            Fecha      = dto.Fecha,
         };
 
         _context.GastosProyecto.Add(gasto);
@@ -49,6 +50,7 @@ public class GastoProyectoService : IGastoProyectoService
 
         gasto.Rubro = dto.Rubro.Trim();
         gasto.Monto = dto.Monto;
+        gasto.Fecha = dto.Fecha;
 
         await _context.SaveChangesAsync(cancellationToken);
     }
@@ -68,6 +70,7 @@ public class GastoProyectoService : IGastoProyectoService
         ProyectoId = g.ProyectoId,
         Rubro      = g.Rubro,
         Monto      = g.Monto,
+        Fecha      = g.Fecha,
         CreadoEn   = g.CreadoEn,
     };
 }

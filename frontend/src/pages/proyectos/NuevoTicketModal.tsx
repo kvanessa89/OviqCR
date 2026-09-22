@@ -3,6 +3,7 @@ import { crearTicket, actualizarTicket } from '../../api/tickets';
 import { getComentariosTicket, crearComentarioTicket } from '../../api/comentarios';
 import { getUsuarios } from '../../api/usuarios';
 import { useCatalogo } from '../../hooks/useCatalogo';
+import { useAuth } from '../../context/AuthContext';
 import type { TicketDto, UsuarioDto, ComentarioDto, ProyectoDto } from '../../types';
 
 interface Props {
@@ -22,6 +23,7 @@ function fmtFecha(iso: string) {
 }
 
 export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estadoIdInicial, onClose, onCreado }: Props) {
+  const { user } = useAuth();
   const { items: estados }     = useCatalogo('estados-ticket');
   const { items: prioridades } = useCatalogo('prioridades-ticket');
   const [usuarios, setUsuarios]       = useState<UsuarioDto[]>([]);
@@ -38,10 +40,15 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estado
   const [fechaFin, setFF]               = useState(ticket?.fechaFin?.slice(0, 10) ?? '');
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   const [comentarioTexto, setComentarioTexto] = useState('');
   const [enviando, setEnviando]               = useState(false);
+
+  useEffect(() => {
+    modalRef.current?.focus({ preventScroll: true });
+  }, []);
 
   useEffect(() => {
     if (error) bodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -71,6 +78,7 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estado
 
   const estadoSeleccionado = estados.find(e => String(e.id) === estadoId);
   const esPendiente = estadoSeleccionado?.codigo === 'pendiente';
+  const edicionRestringida = user?.rol === 'Trabajador' && Boolean(ticket);
 
   useEffect(() => {
     if (!esPendiente) setError(prev => prev === MENSAJE_NOTA_REQUERIDA ? '' : prev);
@@ -136,10 +144,18 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estado
 
   return (
     <div className="modal-bg" onMouseDown={e => { (e.currentTarget as HTMLElement).dataset.mdown = e.target === e.currentTarget ? '1' : '0'; }} onClick={e => { if (e.target === e.currentTarget && (e.currentTarget as HTMLElement).dataset.mdown === '1') onClose(); }}>
-      <div className="modal">
+      <div
+        className="modal"
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ticket-modal-title"
+        tabIndex={-1}
+        style={{ outline: 'none' }}
+      >
         <div className="modal-head">
           <i className="fa-solid fa-ticket" style={{ color: 'var(--primary)' }}></i>
-          <div className="modal-title">
+          <div className="modal-title" id="ticket-modal-title">
             {ticket
               ? <><span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-3)', fontWeight: 400, marginRight: 8 }}>{ticket.codigo}</span>Editar ticket</>
               : 'Nuevo ticket'
@@ -176,25 +192,25 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estado
 
           <div className="field">
             <label>Título <span className="req">*</span></label>
-            <input className="input" value={titulo} onChange={e => setTitulo(e.target.value)} autoFocus placeholder="" />
+            <input className="input" value={titulo} onChange={e => setTitulo(e.target.value)} disabled={edicionRestringida} placeholder="" />
           </div>
 
           <div className="field">
             <label>Descripción</label>
-            <textarea className="textarea" value={descripcion} onChange={e => setDesc(e.target.value)} />
+            <textarea className="textarea" value={descripcion} onChange={e => setDesc(e.target.value)} disabled={edicionRestringida} />
           </div>
 
           <div className="field-row">
             <div className="field">
               <label>Asignado a <span className="req">*</span></label>
-              <select className="select" value={usuarioId} onChange={e => setUsuarioId(e.target.value)}>
+              <select className="select" value={usuarioId} onChange={e => setUsuarioId(e.target.value)} disabled={edicionRestringida}>
                 <option value="">Seleccione...</option>
                 {usuarios.map(u => <option key={u.id} value={u.id}>{u.nombre}</option>)}
               </select>
             </div>
             <div className="field">
               <label>Prioridad <span className="req">*</span></label>
-              <select className="select" value={prioridadId} onChange={e => setPrioridad(e.target.value)}>
+              <select className="select" value={prioridadId} onChange={e => setPrioridad(e.target.value)} disabled={edicionRestringida}>
                 <option value="">Seleccione...</option>
                 {prioridades.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
               </select>
@@ -211,7 +227,7 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estado
             </div>
             <div className="field">
               <label>Fecha inicio</label>
-              <input className="input" type="date" value={fechaInicio} onChange={e => setFI(e.target.value)} />
+              <input className="input" type="date" value={fechaInicio} onChange={e => setFI(e.target.value)} disabled={edicionRestringida} />
             </div>
           </div>
 
@@ -229,7 +245,7 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estado
 
           <div className="field">
             <label>Fecha fin</label>
-            <input className="input" type="date" value={fechaFin} min={fechaInicio || undefined} onChange={e => setFF(e.target.value)} />
+            <input className="input" type="date" value={fechaFin} min={fechaInicio || undefined} onChange={e => setFF(e.target.value)} disabled={edicionRestringida} />
           </div>
 
           {ticket && (
@@ -289,7 +305,7 @@ export default function NuevoTicketModal({ proyectoId, proyectos, ticket, estado
           <button className="btn btn-primary" onClick={handleGuardar} disabled={loading}>
             {loading
               ? <><i className="fa-solid fa-spinner fa-spin"></i> Guardando...</>
-              : <><i className="fa-solid fa-floppy-disk"></i> {ticket ? 'Guardar cambios' : 'Guardar'}</>
+              : <><i className="fa-solid fa-floppy-disk"></i> {edicionRestringida ? 'Guardar estado' : ticket ? 'Guardar cambios' : 'Guardar'}</>
             }
           </button>
         </div>

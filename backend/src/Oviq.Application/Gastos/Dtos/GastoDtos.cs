@@ -6,6 +6,7 @@ public class GastoDto
     public int ProyectoId { get; set; }
     public string Rubro { get; set; } = string.Empty;
     public decimal Monto { get; set; }
+    public DateTime? Fecha { get; set; }
     public DateTime CreadoEn { get; set; }
 }
 
@@ -13,10 +14,12 @@ public class CrearGastoDto
 {
     public string Rubro { get; set; } = string.Empty;
     public decimal Monto { get; set; }
+    public DateTime? Fecha { get; set; }
 }
 
 public class ActualizarGastoDto
 {
     public string Rubro { get; set; } = string.Empty;
     public decimal Monto { get; set; }
+    public DateTime? Fecha { get; set; }
 }

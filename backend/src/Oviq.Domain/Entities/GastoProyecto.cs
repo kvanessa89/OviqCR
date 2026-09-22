@@ -9,4 +9,5 @@ public class GastoProyecto : BaseEntity
 
     public string Rubro { get; set; } = string.Empty;
     public decimal Monto { get; set; }
+    public DateTime? Fecha { get; set; }
 }

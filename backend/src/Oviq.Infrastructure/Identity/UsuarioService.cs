@@ -162,6 +162,35 @@ public class UsuarioService : IUsuarioService
         }
     }
 
+    public async Task EliminarAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var usuario = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException($"Usuario {id} no encontrado");
+
+        var perfil = await _context.PerfilesTrabajador
+            .FirstOrDefaultAsync(p => p.UsuarioId == id, cancellationToken);
+        if (perfil is not null)
+        {
+            _context.PerfilesTrabajador.Remove(perfil);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        try
+        {
+            var resultado = await _userManager.DeleteAsync(usuario);
+            if (!resultado.Succeeded)
+            {
+                var errores = string.Join("; ", resultado.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"No se pudo eliminar el usuario: {errores}");
+            }
+        }
+        catch (DbUpdateException)
+        {
+            throw new InvalidOperationException(
+                "No se puede eliminar el usuario porque tiene comentarios u otra información asociada en el sistema.");
+        }
+    }
+
     private static UsuarioDto MapToDto(ApplicationUser usuario, string rol, PerfilTrabajador? perfil) => new()
     {
         Id = usuario.Id,

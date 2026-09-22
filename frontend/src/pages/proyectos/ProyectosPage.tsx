@@ -204,7 +204,7 @@ export default function ProyectosPage() {
                   #{p.id}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nombre}</div>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', overflowWrap: 'break-word' }}>{p.nombre}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.clienteNombre}</div>

@@ -145,6 +145,7 @@ export interface GastoDto {
   proyectoId: number;
   rubro: string;
   monto: number;
+  fecha?: string | null;
   creadoEn: string;
 }
 

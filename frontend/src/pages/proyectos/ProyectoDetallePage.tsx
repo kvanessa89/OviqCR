@@ -80,6 +80,7 @@ export default function ProyectoDetallePage() {
   const [modalNuevoGasto, setModalNuevoGasto]     = useState(false);
   const [rubroGasto, setRubroGasto]               = useState('');
   const [montoGasto, setMontoGasto]               = useState('');
+  const [fechaGasto, setFechaGasto]               = useState('');
   const [guardandoGasto, setGuardandoGasto]       = useState(false);
   const [errGasto, setErrGasto]                   = useState('');
   const [loading, setLoading]         = useState(true);
@@ -137,11 +138,16 @@ export default function ProyectoDetallePage() {
     if (!montoGasto || montoNum <= 0) { setErrGasto('El monto debe ser mayor a 0'); return; }
     setGuardandoGasto(true);
     try {
-      const nuevo = await crearGasto(Number(id), { rubro: rubroGasto.trim(), monto: montoNum });
+      const nuevo = await crearGasto(Number(id), {
+        rubro: rubroGasto.trim(),
+        monto: montoNum,
+        fecha: fechaGasto ? fechaGasto + 'T00:00:00.000Z' : undefined,
+      });
       setGastos(prev => [...prev, nuevo]);
       setModalNuevoGasto(false);
       setRubroGasto('');
       setMontoGasto('');
+      setFechaGasto('');
       setErrGasto('');
     } catch {
       setErrGasto('Error al guardar el gasto');
@@ -437,7 +443,7 @@ export default function ProyectoDetallePage() {
                 </button>
               )}
               {tabActiva === 'gastos' && (
-                <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={() => { setRubroGasto(''); setMontoGasto(''); setErrGasto(''); setModalNuevoGasto(true); }}>
+                <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={() => { setRubroGasto(''); setMontoGasto(''); setFechaGasto(''); setErrGasto(''); setModalNuevoGasto(true); }}>
                   <i className="fa-solid fa-plus"></i> Agregar
                 </button>
               )}
@@ -536,6 +542,7 @@ export default function ProyectoDetallePage() {
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border)' }}>
                         <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 600, fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Rubro</th>
+                        <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 600, fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Fecha</th>
                         <th style={{ textAlign: 'right', padding: '6px 8px', fontWeight: 600, fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Monto</th>
                       </tr>
                     </thead>
@@ -543,6 +550,7 @@ export default function ProyectoDetallePage() {
                       {gastos.map(g => (
                         <tr key={g.id} style={{ borderBottom: '1px solid var(--border)' }}>
                           <td style={{ padding: '7px 8px', color: 'var(--text-1)' }}>{g.rubro}</td>
+                          <td style={{ padding: '7px 8px', color: 'var(--text-2)' }}>{fmtFecha(g.fecha ?? undefined)}</td>
                           <td style={{ padding: '7px 8px', textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                             {g.monto.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
@@ -551,7 +559,7 @@ export default function ProyectoDetallePage() {
                     </tbody>
                     <tfoot>
                       <tr>
-                        <td style={{ padding: '7px 8px', fontWeight: 700, fontSize: 12, color: 'var(--text-3)', textTransform: 'uppercase' }}>Total</td>
+                        <td style={{ padding: '7px 8px', fontWeight: 700, fontSize: 12, color: 'var(--text-3)', textTransform: 'uppercase' }} colSpan={2}>Total</td>
                         <td style={{ padding: '7px 8px', textAlign: 'right', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                           {gastos.reduce((s, g) => s + g.monto, 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
@@ -850,6 +858,15 @@ export default function ProyectoDetallePage() {
                   placeholder="0.00"
                   value={montoGasto}
                   onChange={e => { setMontoGasto(e.target.value); setErrGasto(''); }}
+                />
+              </div>
+              <div className="field">
+                <label>Fecha</label>
+                <input
+                  className="input"
+                  type="date"
+                  value={fechaGasto}
+                  onChange={e => setFechaGasto(e.target.value)}
                 />
               </div>
             </div>

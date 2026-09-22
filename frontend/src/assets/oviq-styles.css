@@ -70,7 +70,15 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
+html, body, #root {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+}
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
 body {
   font-family: var(--font);
   background: var(--bg);
@@ -85,8 +93,8 @@ input, textarea, select { font-family: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
 
 /* ─── APP LAYOUT ────────────────────────── */
-.app-shell { display: flex; min-height: 100vh; }
-.main-wrap { flex: 1; display: flex; flex-direction: column; margin-left: var(--sidebar-w); transition: margin-left .25s ease; min-width: 0; }
+.app-shell { display: flex; width: 100%; max-width: 100%; min-height: 100vh; overflow-x: clip; }
+.main-wrap { flex: 1; width: 0; max-width: 100%; display: flex; flex-direction: column; margin-left: var(--sidebar-w); transition: margin-left .25s ease; min-width: 0; }
 .app-shell.collapsed .main-wrap { margin-left: var(--sidebar-w-collapsed); }
 
 /* ─── SIDEBAR ────────────────────────── */
@@ -308,12 +316,12 @@ a { color: inherit; text-decoration: none; }
 .content { padding: 26px 32px 40px; max-width: 1600px; width: 100%; margin: 0 auto; }
 
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
-.ph-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ph-left { display: flex; flex-direction: column; gap: 3px; flex: 1 1 380px; min-width: 0; }
 .crumb { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px; font-weight: 600; }
 .crumb a { color: var(--primary); cursor: pointer; }
 .crumb a:hover { text-decoration: underline; }
 .crumb .sep { color: var(--text-3); font-size: 9px; }
-.page-title { font-size: 22px; font-weight: 800; color: var(--text-1); letter-spacing: -0.01em; }
+.page-title { font-size: 22px; font-weight: 800; color: var(--text-1); letter-spacing: -0.01em; overflow-wrap: break-word; word-break: break-word; }
 .page-subtitle { font-size: 13px; color: var(--text-2); }
 .ph-right { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -683,11 +691,11 @@ a { color: inherit; text-decoration: none; }
 .proj-list .proj-head,
 .proj-list .proj-row {
   display: grid;
-  grid-template-columns: 46px minmax(0,1.5fr) minmax(0,1.5fr) 78px 78px 110px 100px 160px 42px;
+  grid-template-columns: 46px minmax(0,2.2fr) minmax(0,1.1fr) 74px 74px 96px 86px 132px 40px;
   gap: 8px;
   padding: 11px 14px;
   align-items: center;
-  min-width: 890px;
+  min-width: 860px;
 }
 .proj-list .proj-head { background: var(--surface-alt); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); }
 .proj-list .proj-row { border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s; }
@@ -1641,7 +1649,7 @@ a { color: inherit; text-decoration: none; }
 
   /* Main wrap no longer pushed by sidebar */
   .main-wrap,
-  .app-shell.collapsed .main-wrap { margin-left: 0; }
+  .app-shell.collapsed .main-wrap { width: 100%; margin-left: 0; }
 
   /* Sidebar nav text always visible while drawer is open */
   .app-shell.collapsed .nav-item { justify-content: flex-start; padding: 11px 16px; }
@@ -1804,6 +1812,7 @@ a { color: inherit; text-decoration: none; }
 
   /* Page head: stack title + actions */
   .page-head { flex-direction: column; align-items: stretch; }
+  .ph-left { flex: 0 1 auto; }
   .ph-right { width: 100%; }
   .ph-right .btn { flex: 1; justify-content: center; }
 

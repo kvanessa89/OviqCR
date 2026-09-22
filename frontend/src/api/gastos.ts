@@ -6,7 +6,7 @@ export const getGastosPorProyecto = async (proyectoId: number): Promise<GastoDto
   return res.data;
 };
 
-export const crearGasto = async (proyectoId: number, dto: { rubro: string; monto: number }): Promise<GastoDto> => {
+export const crearGasto = async (proyectoId: number, dto: { rubro: string; monto: number; fecha?: string }): Promise<GastoDto> => {
   const res = await api.post<GastoDto>(`/proyectos/${proyectoId}/gastos`, dto);
   return res.data;
 };
