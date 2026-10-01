@@ -581,7 +581,13 @@ export default function ProyectoDetallePage() {
             {(() => {
               const totalGastos = gastos.reduce((s, g) => s + g.monto, 0);
               const totalFacturado = resumen?.totalFacturado ?? 0;
-              const utilidadNeta = totalFacturado - totalGastos;
+              // Mismo cálculo que el resumen mensual del Dashboard: 13% sobre
+              // las facturas que no están marcadas "sin IVA". Solo aplica a
+              // proyectos que requieren factura — los que no, no generan IVA.
+              const iva = proyecto.requiereFactura
+                ? facturas.reduce((s, f) => s + (f.sinIva ? 0 : f.monto * 0.13), 0)
+                : 0;
+              const utilidadNeta = totalFacturado - iva - totalGastos;
               const fmt = (n: number) => n.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
               return (
@@ -594,10 +600,16 @@ export default function ProyectoDetallePage() {
                   )}
 
                   {proyecto.requiereFactura ? (
-                    <div className="dp-row">
-                      <span className="lbl">Total facturado</span>
-                      <span className="val" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt(totalFacturado)}</span>
-                    </div>
+                    <>
+                      <div className="dp-row">
+                        <span className="lbl">Total facturado</span>
+                        <span className="val" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt(totalFacturado)}</span>
+                      </div>
+                      <div className="dp-row">
+                        <span className="lbl">IVA (13%)</span>
+                        <span className="val" style={{ fontVariantNumeric: 'tabular-nums', color: iva > 0 ? 'var(--danger)' : undefined }}>{fmt(iva)}</span>
+                      </div>
+                    </>
                   ) : proyecto.estadoCodigo === 'finalizado' ? (
                     <div className="dp-row">
                       <span className="lbl">Total del proyecto</span>
