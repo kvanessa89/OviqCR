@@ -38,7 +38,7 @@ function estadoColor(codigo: string) { return ESTADO_COLORS[codigo] ?? '#64748B'
 function prioridadColor(codigo: string) { return PRIORIDAD_COLORS[codigo] ?? '#94A3B8'; }
 function formatFecha(fecha?: string | null) {
   if (!fecha) return null;
-  return new Date(fecha).toLocaleDateString('es-CR', { day: '2-digit', month: 'short' });
+  return new Date(fecha).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', timeZone: 'UTC' });
 }
 function isOverdue(fecha?: string | null) {
   if (!fecha) return false;

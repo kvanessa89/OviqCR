@@ -9,6 +9,11 @@ public class ProyectoResumenFinancieroService : IProyectoResumenFinancieroServic
 {
     private readonly IApplicationDbContext _context;
 
+    // Costa Rica es UTC-6 todo el año (no observa horario de verano), así que
+    // un offset fijo es seguro — se usa para que "el mes" en los resúmenes
+    // coincida con el calendario del usuario, no con el calendario UTC.
+    private static readonly TimeSpan CostaRicaOffset = TimeSpan.FromHours(-6);
+
     public ProyectoResumenFinancieroService(IApplicationDbContext context)
     {
         _context = context;
@@ -95,8 +100,14 @@ public class ProyectoResumenFinancieroService : IProyectoResumenFinancieroServic
 
     public async Task<ResumenMensualDto> ObtenerResumenMensualAsync(int anio, int mes, CancellationToken cancellationToken = default)
     {
-        var inicioMes = new DateTime(anio, mes, 1, 0, 0, 0, DateTimeKind.Utc);
-        var inicioMesSiguiente = inicioMes.AddMonths(1);
+        // El mes se calcula en hora de Costa Rica, no en UTC puro: con límites
+        // en UTC puro, cualquier proyecto finalizado/facturado entre las 6pm y
+        // medianoche hora local caía en el mes "de mañana" en UTC, aunque para
+        // el usuario todavía era hoy — quedaba invisible en el resumen del mes
+        // que esperaba ver.
+        var inicioMesLocal = new DateTimeOffset(anio, mes, 1, 0, 0, 0, CostaRicaOffset);
+        var inicioMes = inicioMesLocal.UtcDateTime;
+        var inicioMesSiguiente = inicioMesLocal.AddMonths(1).UtcDateTime;
 
         // Proyectos facturados: monto de todas las facturas (CRC) emitidas en el mes,
         // sin importar si ya se pagaron o no.

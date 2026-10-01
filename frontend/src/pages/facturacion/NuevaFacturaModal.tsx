@@ -38,7 +38,7 @@ function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: bool
 
 function fmtFecha(iso?: string) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
 }
 
 export default function NuevaFacturaModal({ factura, proyectoIdFijo, clienteIdFijo, onClose, onGuardada }: Props) {

@@ -30,6 +30,15 @@ public class CrearProyectoValidator : AbstractValidator<CrearProyectoDto>
             .MustAsync(SubcuentaPerteneceAlClienteAsync)
             .WithMessage("La subcuenta seleccionada no pertenece al cliente seleccionado")
             .When(x => x.SubcuentaId.HasValue);
+
+        // Si el proyecto se crea directo como "Finalizado" y no requiere factura,
+        // no hay ninguna factura de la cual derivar el monto total — se exige el
+        // presupuesto inicial acá, igual que MarcarFinalizadoAsync lo exige al
+        // finalizar un proyecto que ya estaba en curso.
+        RuleFor(x => x)
+            .MustAsync(PresupuestoInicialValidoSiFinalizadoAsync)
+            .WithMessage("Debe ingresar el presupuesto inicial para crear el proyecto como finalizado")
+            .When(x => !x.RequiereFactura);
     }
 
     private async Task<bool> SubcuentaPerteneceAlClienteAsync(
@@ -39,5 +48,16 @@ public class CrearProyectoValidator : AbstractValidator<CrearProyectoDto>
             .FirstOrDefaultAsync(s => s.Id == dto.SubcuentaId, cancellationToken);
 
         return subcuenta is not null && subcuenta.ClienteId == dto.ClienteId;
+    }
+
+    private async Task<bool> PresupuestoInicialValidoSiFinalizadoAsync(
+        CrearProyectoDto dto, CancellationToken cancellationToken)
+    {
+        var estado = await _context.EstadosProyecto
+            .FirstOrDefaultAsync(e => e.Id == dto.EstadoId, cancellationToken);
+
+        if (estado?.Codigo != "finalizado") return true;
+
+        return dto.PresupuestoInicial is > 0;
     }
 }

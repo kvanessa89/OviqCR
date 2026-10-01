@@ -7,12 +7,12 @@ import ConfirmDeleteModal from '../../components/ui/ConfirmDeleteModal';
 
 function fmtFecha(iso?: string) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
 }
 
 function fmtFechaCorta(iso?: string) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit' });
+  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
 }
 
 const ESTADO_PROYECTO_COLORS: Record<string, { bg: string; color: string }> = {

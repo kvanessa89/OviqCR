@@ -36,7 +36,7 @@ function PrioridadTag({ codigo }: { codigo: string }) {
 
 function fmtFecha(iso?: string) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
 }
 
 function FacturaEstadoPill({ codigo, nombre, vencida }: { codigo: string; nombre: string; vencida: boolean }) {
@@ -790,11 +790,11 @@ export default function ProyectoDetallePage() {
               )}
             </div>
             <div className="modal-foot">
-              <button className="btn btn-ghost" onClick={() => setConfirmFinalizar(false)}>
+              <button className="btn btn-ghost cf-finalizar-cancel" onClick={() => setConfirmFinalizar(false)}>
                 Cancelar
               </button>
               <button
-                className="btn btn-primary"
+                className="btn btn-primary cf-finalizar-confirm"
                 style={{ background: 'var(--success)' }}
                 disabled={marcandoFinalizado}
                 onClick={handleMarcarFinalizado}

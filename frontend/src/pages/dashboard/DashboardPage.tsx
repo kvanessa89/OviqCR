@@ -17,7 +17,7 @@ const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', '
 function shortDate(iso?: string) {
   if (!iso) return '—';
   const d = new Date(iso);
-  return `${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return `${d.getUTCDate()}/${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
 function fmtCompact(n: number) {

@@ -11,7 +11,7 @@ const API_BASE = 'https://localhost:7299';
 
 function fmtFecha(iso?: string) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
 }
 
 function fmtMoney(monto: number, codigo: string) {

@@ -59,6 +59,19 @@ public class ProyectoService : IProyectoService
         _context.Proyectos.Add(proyecto);
         await _context.SaveChangesAsync(cancellationToken);
 
+        // Si se crea directo con estado "Finalizado" (proyecto histórico ya
+        // completado), debe comportarse igual que "Marcar finalizado": fecha
+        // de finalización, monto total (CrearProyectoValidator ya exige
+        // PresupuestoInicial en este caso) y estado financiero.
+        var estadoSeleccionado = await _context.EstadosProyecto
+            .FirstOrDefaultAsync(e => e.Id == dto.EstadoId, cancellationToken);
+
+        if (estadoSeleccionado?.Codigo == "finalizado")
+        {
+            await FinalizarProyectoAsync(proyecto, dto.PresupuestoInicial, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
         return (await ObtenerPorIdAsync(proyecto.Id, cancellationToken))!;
     }
 
@@ -117,6 +130,19 @@ public class ProyectoService : IProyectoService
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException($"Proyecto {id} no encontrado");
 
+        await FinalizarProyectoAsync(proyecto, dto.MontoTotal, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    // Lógica compartida entre MarcarFinalizadoAsync (botón "Marcar finalizado")
+    // y CrearAsync (cuando el proyecto se crea directo con estado "Finalizado",
+    // por ejemplo al cargar un proyecto histórico) — ambos caminos deben dejar
+    // el proyecto en el mismo estado: FechaFinalizado poblada, monto total
+    // (si no requiere factura) y estado financiero correctos. Sin esto, un
+    // proyecto creado ya "Finalizado" queda con FechaFinalizado en null para
+    // siempre y nunca aparece en el resumen mensual.
+    private async Task FinalizarProyectoAsync(Proyecto proyecto, decimal? montoTotal, CancellationToken cancellationToken)
+    {
         var estadoFinalizado = await _context.EstadosProyecto
             .FirstOrDefaultAsync(e => e.Codigo == "finalizado", cancellationToken)
             ?? throw new InvalidOperationException("No existe el estado 'finalizado' en el catálogo EstadoProyecto");
@@ -130,20 +156,20 @@ public class ProyectoService : IProyectoService
         {
             // Sin facturas no hay de dónde derivar el monto total — se exige acá,
             // al finalizar, en vez de dejarlo editable libremente antes de tiempo.
-            if (dto.MontoTotal is null || dto.MontoTotal <= 0)
+            if (montoTotal is null || montoTotal <= 0)
                 throw new InvalidOperationException("Debe ingresar el monto total del proyecto para finalizarlo");
 
             var resumen = await _context.ProyectosResumenFinanciero
-                .FirstOrDefaultAsync(r => r.ProyectoId == id, cancellationToken);
+                .FirstOrDefaultAsync(r => r.ProyectoId == proyecto.Id, cancellationToken);
 
             if (resumen is null)
             {
-                resumen = new ProyectoResumenFinanciero { ProyectoId = id };
+                resumen = new ProyectoResumenFinanciero { ProyectoId = proyecto.Id };
                 _context.ProyectosResumenFinanciero.Add(resumen);
             }
 
-            resumen.TotalFacturado = dto.MontoTotal.Value;
-            resumen.UtilidadNeta = dto.MontoTotal.Value - resumen.TotalCostos;
+            resumen.TotalFacturado = montoTotal.Value;
+            resumen.UtilidadNeta = montoTotal.Value - resumen.TotalCostos;
 
             codigoEF = "pendiente_de_pago";
         }
@@ -154,7 +180,6 @@ public class ProyectoService : IProyectoService
         else
         {
             // Ya tiene facturas emitidas — el estado financiero fue asignado al emitir la factura
-            await _context.SaveChangesAsync(cancellationToken);
             return;
         }
 
@@ -163,8 +188,6 @@ public class ProyectoService : IProyectoService
 
         if (estadoFinanciero is not null)
             proyecto.EstadoFinancieroId = estadoFinanciero.Id;
-
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task EliminarAsync(int id, CancellationToken cancellationToken = default)

@@ -54,12 +54,22 @@ export default function NuevoProyectoModal({ onClose, onCreado, clienteIdInicial
     setSubcuentaId('');
   }, [clienteId, clientes]);
 
+  const estadoSeleccionado = estados.find(e => String(e.id) === estadoId);
+  // Crear el proyecto directo como "Finalizado" (proyecto histórico) debe
+  // comportarse igual que "Marcar finalizado": sin factura de la cual derivar
+  // el monto, se exige el presupuesto inicial acá mismo.
+  const creandoFinalizadoSinFactura = estadoSeleccionado?.codigo === 'finalizado' && !requiereFactura;
+
   const handleGuardar = async () => {
     if (!nombre.trim())           { setError('El nombre del proyecto es requerido'); return; }
     if (!clienteId)               { setError('Seleccione un cliente'); return; }
     if (!estadoId)                { setError('Seleccione un estado'); return; }
     if (tieneOC && !monedaId)    { setError('Seleccione la moneda de la orden de compra'); return; }
     if (fechaInicio && fechaFin && fechaFin < fechaInicio) { setError('La fecha estimada de fin debe ser mayor o igual a la fecha de inicio'); return; }
+    if (creandoFinalizadoSinFactura && (!presupuestoInicial || Number(presupuestoInicial) <= 0)) {
+      setError('Ingresá el presupuesto inicial para crear el proyecto como finalizado.');
+      return;
+    }
 
     setError('');
     setLoading(true);
@@ -156,16 +166,21 @@ export default function NuevoProyectoModal({ onClose, onCreado, clienteIdInicial
           </div>
 
           <div className="field">
-            <label>Presupuesto inicial</label>
+            <label>Presupuesto inicial {creandoFinalizadoSinFactura && <span className="req">*</span>}</label>
             <input
               className="input"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Opcional"
+              placeholder={creandoFinalizadoSinFactura ? '0.00' : 'Opcional'}
               value={presupuestoInicial}
               onChange={e => setPresupuestoInicial(e.target.value)}
             />
+            {creandoFinalizadoSinFactura && (
+              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>
+                Requerido: el proyecto se está creando como "Finalizado" y no requiere factura, así que no hay de dónde derivar el monto total.
+              </div>
+            )}
           </div>
 
           <div className="field">
