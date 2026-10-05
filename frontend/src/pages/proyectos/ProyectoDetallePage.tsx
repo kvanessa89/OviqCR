@@ -5,7 +5,7 @@ import type { ResumenFinancieroDto } from '../../api/proyectos';
 import { getTicketsPorProyecto } from '../../api/tickets';
 import { getComentariosProyecto, crearComentarioProyecto } from '../../api/comentarios';
 import { getFacturasPorProyecto } from '../../api/facturas';
-import { getGastosPorProyecto, crearGasto } from '../../api/gastos';
+import { getGastosPorProyecto, crearGasto, actualizarGasto } from '../../api/gastos';
 import { getPagosPorProyecto } from '../../api/pagos';
 import NuevaFacturaModal from '../facturacion/NuevaFacturaModal';
 import type { ProyectoDto, TicketDto, ComentarioDto, FacturaDto, GastoDto, PagoProyectoDto } from '../../types';
@@ -78,11 +78,13 @@ export default function ProyectoDetallePage() {
   const [tabActiva, setTabActiva]     = useState<'comentarios' | 'facturas' | 'gastos'>('comentarios');
   const [modalNuevaFactura, setModalNuevaFactura] = useState(false);
   const [modalNuevoGasto, setModalNuevoGasto]     = useState(false);
+  const [gastoEditando, setGastoEditando]         = useState<GastoDto | null>(null);
   const [rubroGasto, setRubroGasto]               = useState('');
   const [montoGasto, setMontoGasto]               = useState('');
   const [fechaGasto, setFechaGasto]               = useState('');
   const [guardandoGasto, setGuardandoGasto]       = useState(false);
   const [errGasto, setErrGasto]                   = useState('');
+  const [facturaEditando, setFacturaEditando]     = useState<FacturaDto | null>(null);
   const [loading, setLoading]         = useState(true);
   const [comentarioTexto, setComentarioTexto]     = useState('');
   const [enviandoComentario, setEnviandoComentario] = useState(false);
@@ -132,19 +134,30 @@ export default function ProyectoDetallePage() {
     if (proyecto && !proyecto.requiereFactura && tabActiva === 'facturas') setTabActiva('comentarios');
   }, [proyecto?.requiereFactura]);
 
+  const cerrarModalGasto = () => {
+    setModalNuevoGasto(false);
+    setGastoEditando(null);
+  };
+
   const handleGuardarGasto = async () => {
     if (!rubroGasto.trim()) { setErrGasto('El rubro es requerido'); return; }
     const montoNum = Number(montoGasto);
     if (!montoGasto || montoNum <= 0) { setErrGasto('El monto debe ser mayor a 0'); return; }
     setGuardandoGasto(true);
     try {
-      const nuevo = await crearGasto(Number(id), {
+      const dto = {
         rubro: rubroGasto.trim(),
         monto: montoNum,
         fecha: fechaGasto ? fechaGasto + 'T00:00:00.000Z' : undefined,
-      });
-      setGastos(prev => [...prev, nuevo]);
-      setModalNuevoGasto(false);
+      };
+      if (gastoEditando) {
+        await actualizarGasto(gastoEditando.id, dto);
+        setGastos(prev => prev.map(g => g.id === gastoEditando.id ? { ...g, ...dto } : g));
+      } else {
+        const nuevo = await crearGasto(Number(id), dto);
+        setGastos(prev => [...prev, nuevo]);
+      }
+      cerrarModalGasto();
       setRubroGasto('');
       setMontoGasto('');
       setFechaGasto('');
@@ -443,7 +456,7 @@ export default function ProyectoDetallePage() {
                 </button>
               )}
               {tabActiva === 'gastos' && (
-                <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={() => { setRubroGasto(''); setMontoGasto(''); setFechaGasto(''); setErrGasto(''); setModalNuevoGasto(true); }}>
+                <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={() => { setGastoEditando(null); setRubroGasto(''); setMontoGasto(''); setFechaGasto(''); setErrGasto(''); setModalNuevoGasto(true); }}>
                   <i className="fa-solid fa-plus"></i> Agregar
                 </button>
               )}
@@ -514,7 +527,7 @@ export default function ProyectoDetallePage() {
                     </thead>
                     <tbody>
                       {facturas.map(f => (
-                        <tr key={f.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <tr key={f.id} style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => setFacturaEditando(f)}>
                           <td style={{ padding: '7px 8px', color: 'var(--text-2)', fontFamily: 'var(--font-mono, monospace)', fontSize: 12 }}>{f.numero}</td>
                           <td style={{ padding: '7px 8px', textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                             {f.monedaCodigo === 'CRC' ? '₡' : f.monedaCodigo === 'USD' ? '$' : f.monedaCodigo + ' '}
@@ -548,7 +561,18 @@ export default function ProyectoDetallePage() {
                     </thead>
                     <tbody>
                       {gastos.map(g => (
-                        <tr key={g.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <tr
+                          key={g.id}
+                          style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                          onClick={() => {
+                            setGastoEditando(g);
+                            setRubroGasto(g.rubro);
+                            setMontoGasto(String(g.monto));
+                            setFechaGasto(g.fecha ? g.fecha.slice(0, 10) : '');
+                            setErrGasto('');
+                            setModalNuevoGasto(true);
+                          }}
+                        >
                           <td style={{ padding: '7px 8px', color: 'var(--text-1)' }}>{g.rubro}</td>
                           <td style={{ padding: '7px 8px', color: 'var(--text-2)' }}>{fmtFecha(g.fecha ?? undefined)}</td>
                           <td style={{ padding: '7px 8px', textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
@@ -834,13 +858,27 @@ export default function ProyectoDetallePage() {
         />
       )}
 
+      {facturaEditando && proyecto && (
+        <NuevaFacturaModal
+          factura={facturaEditando}
+          proyectoIdFijo={proyecto.id}
+          clienteIdFijo={proyecto.clienteId}
+          onClose={() => setFacturaEditando(null)}
+          onGuardada={() => {
+            setFacturaEditando(null);
+            getFacturasPorProyecto(proyecto.id).then(setFacturas);
+            cargar();
+          }}
+        />
+      )}
+
       {modalNuevoGasto && proyecto && (
-        <div className="modal-bg" onMouseDown={e => { (e.currentTarget as HTMLElement).dataset.mdown = e.target === e.currentTarget ? '1' : '0'; }} onClick={e => { if (e.target === e.currentTarget && (e.currentTarget as HTMLElement).dataset.mdown === '1') setModalNuevoGasto(false); }}>
+        <div className="modal-bg" onMouseDown={e => { (e.currentTarget as HTMLElement).dataset.mdown = e.target === e.currentTarget ? '1' : '0'; }} onClick={e => { if (e.target === e.currentTarget && (e.currentTarget as HTMLElement).dataset.mdown === '1') cerrarModalGasto(); }}>
           <div className="modal" style={{ maxWidth: 400 }}>
             <div className="modal-head">
               <i className="fa-solid fa-receipt" style={{ color: 'var(--primary)' }}></i>
-              <div className="modal-title">Nuevo gasto</div>
-              <button className="modal-close" onClick={() => setModalNuevoGasto(false)}>
+              <div className="modal-title">{gastoEditando ? 'Editar gasto' : 'Nuevo gasto'}</div>
+              <button className="modal-close" onClick={cerrarModalGasto}>
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
@@ -883,7 +921,7 @@ export default function ProyectoDetallePage() {
               </div>
             </div>
             <div className="modal-foot">
-              <button className="btn btn-ghost" onClick={() => setModalNuevoGasto(false)}>
+              <button className="btn btn-ghost" onClick={cerrarModalGasto}>
                 Cancelar
               </button>
               <button
@@ -893,7 +931,7 @@ export default function ProyectoDetallePage() {
               >
                 {guardandoGasto
                   ? <><i className="fa-solid fa-spinner fa-spin"></i> Guardando...</>
-                  : <><i className="fa-solid fa-floppy-disk"></i> Guardar</>
+                  : <><i className="fa-solid fa-floppy-disk"></i> {gastoEditando ? 'Guardar cambios' : 'Guardar'}</>
                 }
               </button>
             </div>

@@ -10,3 +10,7 @@ export const crearGasto = async (proyectoId: number, dto: { rubro: string; monto
   const res = await api.post<GastoDto>(`/proyectos/${proyectoId}/gastos`, dto);
   return res.data;
 };
+
+export const actualizarGasto = async (id: number, dto: { rubro: string; monto: number; fecha?: string }): Promise<void> => {
+  await api.put(`/gastos/${id}`, dto);
+};
