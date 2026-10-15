@@ -849,6 +849,7 @@ export default function ProyectoDetallePage() {
         <NuevaFacturaModal
           proyectoIdFijo={proyecto.id}
           clienteIdFijo={proyecto.clienteId}
+          subcuentaIdFijo={proyecto.subcuentaId}
           onClose={() => setModalNuevaFactura(false)}
           onGuardada={() => {
             setModalNuevaFactura(false);
@@ -863,6 +864,7 @@ export default function ProyectoDetallePage() {
           factura={facturaEditando}
           proyectoIdFijo={proyecto.id}
           clienteIdFijo={proyecto.clienteId}
+          subcuentaIdFijo={proyecto.subcuentaId}
           onClose={() => setFacturaEditando(null)}
           onGuardada={() => {
             setFacturaEditando(null);

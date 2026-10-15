@@ -9,6 +9,7 @@ interface Props {
   factura?: FacturaDto;
   proyectoIdFijo?: number;
   clienteIdFijo?: number;
+  subcuentaIdFijo?: number;
   onClose: () => void;
   onGuardada: () => void;
 }
@@ -41,7 +42,7 @@ function fmtFecha(iso?: string) {
   return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
 }
 
-export default function NuevaFacturaModal({ factura, proyectoIdFijo, clienteIdFijo, onClose, onGuardada }: Props) {
+export default function NuevaFacturaModal({ factura, proyectoIdFijo, clienteIdFijo, subcuentaIdFijo, onClose, onGuardada }: Props) {
   const editando = !!factura;
   const { items: estados } = useCatalogo('estados-factura');
   const { items: monedas } = useCatalogo('monedas');
@@ -50,7 +51,7 @@ export default function NuevaFacturaModal({ factura, proyectoIdFijo, clienteIdFi
 
   const [numero, setNumero]           = useState(factura?.numero ?? '');
   const [clienteId, setClienteId]     = useState(factura ? String(factura.clienteId) : clienteIdFijo ? String(clienteIdFijo) : '');
-  const [subcuentaId, setSubcuentaId] = useState(factura?.subcuentaId ? String(factura.subcuentaId) : '');
+  const [subcuentaId, setSubcuentaId] = useState(factura?.subcuentaId ? String(factura.subcuentaId) : subcuentaIdFijo ? String(subcuentaIdFijo) : '');
   const [proyectoId, setProyectoId]   = useState(factura ? String(factura.proyectoId) : proyectoIdFijo ? String(proyectoIdFijo) : '');
   const [monedaId, setMoneda]         = useState(factura ? String(factura.monedaId) : '');
   const [monto, setMonto]             = useState(factura ? String(factura.monto) : '');
@@ -205,7 +206,7 @@ export default function NuevaFacturaModal({ factura, proyectoIdFijo, clienteIdFi
           {clienteId && subcuentasDisponibles.length > 0 && (
             <div className="field">
               <label>Subcuenta</label>
-              <select className="select" value={subcuentaId} onChange={e => handleSubcuentaChange(e.target.value)}>
+              <select className="select" value={subcuentaId} onChange={e => handleSubcuentaChange(e.target.value)} disabled={!!proyectoIdFijo}>
                 <option value="">Sin subcuenta</option>
                 {subcuentasDisponibles.map(s => (
                   <option key={s.id} value={s.id}>
