@@ -4,6 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { login as loginApi } from '../../api/auth';
 
+function LoginFooter() {
+  return (
+    <footer className="login-footer">
+      <span>© 2026 OVIQ CR · Todos los derechos reservados · Desarrollado por{' '}
+        <a href="https://kiub.co" target="_blank" rel="noopener noreferrer" className="login-footer-link">kiub</a>
+      </span>
+      <a href="https://kiub.co" target="_blank" rel="noopener noreferrer" className="login-footer-brand">
+        <img src="/logo-kiub.png" alt="kiub" />
+      </a>
+    </footer>
+  );
+}
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -105,6 +118,8 @@ export default function LoginPage() {
             ¿Olvidaste tu contraseña? Contactá al administrador.
           </div>
         </div>
+
+        <LoginFooter />
       </div>
     </div>
   );
