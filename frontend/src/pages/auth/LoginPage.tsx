@@ -7,12 +7,15 @@ import { login as loginApi } from '../../api/auth';
 function LoginFooter() {
   return (
     <footer className="login-footer">
-      <span>© 2026 OVIQ CR · Todos los derechos reservados · Desarrollado por{' '}
-        <a href="https://kiub.co" target="_blank" rel="noopener noreferrer" className="login-footer-link">kiub</a>
+      <span>© 2026 OVIQ CR · Todos los derechos reservados</span>
+      <span className="login-footer-credit">
+        <span>Desarrollado por{' '}
+          <a href="https://kiub.co" target="_blank" rel="noopener noreferrer" className="login-footer-link">kiub</a>
+        </span>
+        <a href="https://kiub.co" target="_blank" rel="noopener noreferrer" className="login-footer-brand">
+          <img src="/logo-kiub.png" alt="kiub" />
+        </a>
       </span>
-      <a href="https://kiub.co" target="_blank" rel="noopener noreferrer" className="login-footer-brand">
-        <img src="/logo-kiub.png" alt="kiub" />
-      </a>
     </footer>
   );
 }
